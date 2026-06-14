@@ -351,12 +351,93 @@ local function BuildOverviewTab(parent)
     lockedHeader:SetText("Locked Echoes:")
     outer._lockedHeader = lockedHeader
 
+    local detectBtn = CreateFrame("Button", nil, outer, "UIPanelButtonTemplate")
+    detectBtn:SetSize(80, 18)
+    detectBtn:SetPoint("LEFT", lockedHeader, "RIGHT", 8, 0)
+    detectBtn:SetText("Detect")
+    detectBtn:SetScript("OnClick", function()
+        local build = BO.state.build
+        if not build then return end
+        local total = EbonBuilds.Build.AutoDetectLockedSlots()
+        if total == 0 then
+            print("|cffFF6600EbonBuilds:|r No locked echoes found on this character.")
+            return
+        end
+        local serverLocked = EbonBuilds.Build.GetServerLockedPerks()
+        local current = build.lockedEchoes or {}
+        local filled = {}
+        for i = 1, 5 do
+            if current[i] then filled[current[i]] = true end
+        end
+        local added = 0
+        for _, inst in ipairs(serverLocked) do
+            if inst.spellId and not filled[inst.spellId] then
+                for i = 1, 5 do
+                    if not build.lockedEchoes or not build.lockedEchoes[i] then
+                        build.lockedEchoes = build.lockedEchoes or {}
+                        build.lockedEchoes[i] = inst.spellId
+                        filled[inst.spellId] = true
+                        added = added + 1
+                        break
+                    end
+                end
+            end
+        end
+        BO.MarkDirty()
+        RefreshOverview()
+        print("|cff19ff19EbonBuilds:|r Auto-detected " .. total .. " locked echoes, added " .. added .. " to build.")
+    end)
+
     local lockedButtons = {}
     for i = 1, 5 do
         local btn = CreateIconButton(outer, 36)
         btn:SetPoint("TOPLEFT", lockedHeader, "BOTTOMLEFT", (i - 1) * 42, -6)
+        btn:EnableMouse(true)
+        btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         UIH.CreateQualityBorder(btn)
         UIH.WireLockedIconTooltip(btn)
+
+        local idx = i
+        btn:SetScript("OnClick", function(_, button)
+            local build = BO.state.build
+            if not build then return end
+            build.lockedEchoes = build.lockedEchoes or {}
+
+            if button == "RightButton" then
+                build.lockedEchoes[idx] = nil
+                btn._icon:SetTexture(EMPTY_SLOT)
+                btn._spellId = nil
+                btn._border:Hide()
+                BO.MarkDirty()
+                return
+            end
+
+            local banList = build.settings and build.settings.echoBanList or {}
+            local allList = EbonBuilds.EchoTableRows.BuildAllQualitiesList()
+            local filtered = {}
+            for _, entry in ipairs(allList) do
+                if not banList[entry.spellId] then
+                    local alreadyLocked = false
+                    for j = 1, 5 do
+                        if j ~= idx and build.lockedEchoes[j] == entry.spellId then
+                            alreadyLocked = true
+                            break
+                        end
+                    end
+                    if not alreadyLocked then
+                        filtered[#filtered + 1] = entry
+                    end
+                end
+            end
+            EbonBuilds.EchoPicker.Show(function(spellId, quality, name)
+                build.lockedEchoes[idx] = spellId
+                btn._spellId = spellId
+                btn._icon:SetTexture(select(3, GetSpellInfo(spellId)))
+                ApplyQualityBorder(btn._border, quality)
+                BO.MarkDirty()
+            end, filtered)
+        end)
+
         lockedButtons[i] = btn
     end
     outer._lockedButtons = lockedButtons

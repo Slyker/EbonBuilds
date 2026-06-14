@@ -755,6 +755,8 @@ end
 -- Navigation
 ------------------------------------------------------------------------
 
+local RenderCurrentStep
+
 local function GoNext()
     if state.step >= 6 then
         CreateBuildFromWizard()
@@ -803,7 +805,7 @@ local function GoBack()
     RenderCurrentStep()
 end
 
-local function RenderCurrentStep()
+RenderCurrentStep = function()
     ClearContent()
     backBtn:Show()
     nextBtn:Show()
