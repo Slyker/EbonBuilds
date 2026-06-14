@@ -1,0 +1,41 @@
+## Interface: 30300
+## Title: EbonBuilds
+## Dependencies: ProjectEbonhold
+## SavedVariables: EbonBuildsDB
+## SavedVariablesPerCharacter: EbonBuildsCharDB
+
+core/Init.lua
+modules/data/Constants.lua
+core/UIHelpers.lua
+modules/data/SpecData.lua
+modules/data/IconList.lua
+modules/build/Build.lua
+modules/weights/Weights.lua
+modules/ui/MinimapButton.lua
+modules/ui/MainWindow.lua
+modules/ui/ViewRouter.lua
+modules/ui/BuildList.lua
+modules/ui/EchoPicker.lua
+modules/ui/BuildWizard.lua
+modules/ui/BuildForm.lua
+modules/ui/Filters.lua
+modules/ui/EchoTableRows.lua
+modules/ui/EchoTable.lua
+modules/session/Session.lua
+modules/build/Scoring.lua
+modules/build/ExportImport.lua
+modules/sync/Sync.lua
+modules/ui/WeightsView.lua
+modules/ui/WelcomeView.lua
+modules/ui/PublicBuildsView.lua
+modules/ui/SettingsView.lua
+modules/ui/BuildOverview/EchoesData.lua
+modules/ui/BuildOverview/OverviewTab.lua
+modules/ui/BuildOverview/StatsTab.lua
+modules/ui/BuildOverview/MissingTab.lua
+modules/ui/BuildOverview/EchoesTab.lua
+modules/ui/BuildOverview/LogbookTab.lua
+modules/ui/BuildOverview/Init.lua
+modules/ui/Toast.lua
+modules/ui/SessionHistory.lua
+modules/automation/Automation.lua
