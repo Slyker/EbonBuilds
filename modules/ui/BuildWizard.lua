@@ -22,7 +22,6 @@ local function CreateBuild(name)
         settings = EbonBuilds.Build.DefaultSettings(),
         isPublic = false,
     })
-    EbonBuilds.Build.SetActive(b.id)
 
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
         EbonBuilds.BuildList.Refresh()

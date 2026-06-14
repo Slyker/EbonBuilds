@@ -278,7 +278,6 @@ function EbonBuilds.ExportImport.ImportBuild(b64String)
 	local build = EbonBuilds.ExportImport.DecodeBuild(b64String)
 	if not build then return nil end
 	EbonBuildsDB.builds[build.id] = build
-	EbonBuilds.Build.SetActive(build.id)
 	return build
 end
 

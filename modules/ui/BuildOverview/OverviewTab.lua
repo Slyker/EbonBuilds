@@ -455,6 +455,22 @@ local function BuildOverviewTab(parent)
     end)
     outer._autoToggle = autoToggle
 
+    local activateBtn = CreateFrame("Button", nil, outer, "UIPanelButtonTemplate")
+    activateBtn:SetWidth(120)
+    activateBtn:SetHeight(22)
+    activateBtn:SetPoint("LEFT", autoToggle, "RIGHT", 10, 0)
+    activateBtn:SetText("Activate")
+    activateBtn:SetScript("OnClick", function()
+        local build = BO.state.build
+        if not build then return end
+        EbonBuilds.Build.SetActive(build.id)
+        if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
+            EbonBuilds.BuildList.Refresh()
+        end
+        print("|cff19ff19EbonBuilds:|r Activated \"" .. (build.title or "Untitled") .. "\"")
+    end)
+    outer._activateBtn = activateBtn
+
     local descHeader = outer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     descHeader:SetPoint("TOPLEFT", autoToggle, "BOTTOMLEFT", 0, -14)
     descHeader:SetText("Description:")

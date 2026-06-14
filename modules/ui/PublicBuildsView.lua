@@ -260,7 +260,6 @@ local function ImportBuild(build)
     if EbonBuildsDB.remoteBuilds then
         EbonBuildsDB.remoteBuilds[build.id] = nil
     end
-    EbonBuilds.Build.SetActive(newBuild.id)
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
         EbonBuilds.BuildList.Refresh()
     end
@@ -269,7 +268,6 @@ end
 
 local function UpdateLocalBuild(localBuild, publicBuild)
     EbonBuilds.Build.UpdateFromPublic(localBuild, publicBuild)
-    EbonBuilds.Build.SetActive(localBuild.id)
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
         EbonBuilds.BuildList.Refresh()
     end

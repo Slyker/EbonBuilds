@@ -394,7 +394,6 @@ local function OnSave()
         })
         state.mode = "edit"
         state.id   = b.id
-        EbonBuilds.Build.SetActive(b.id)
     else
         EbonBuilds.Build.Save(state.id, {
             title = state.title, class = state.class, spec = state.spec,
