@@ -17,6 +17,7 @@ local newBuildBtn
 local importBtn
 local publicBuildsBtn
 local titleMeasureFont
+local selectedBuildId = nil
 
 ------------------------------------------------------------------------
 -- Helpers
@@ -116,7 +117,9 @@ end
 
 local function WireNavigate(btn, build)
     btn:SetScript("OnClick", function()
+        selectedBuildId = build.id
         EbonBuilds.ViewRouter.Show("buildOverview", { build = build })
+        Render()
     end)
 end
 
@@ -124,6 +127,7 @@ local LOCKED_X_START = 10
 local LOCKED_STEP    = 28
 
 local function PopulateRow(row, build, activeId, yOffset)
+    local isSelected = (build.id == selectedBuildId)
     local isActive = (build.id == activeId)
     local classToken = build.class
     local cc = CLASS_COLORS[classToken] or { 0.5, 0.5, 0.5 }
@@ -137,18 +141,23 @@ local function PopulateRow(row, build, activeId, yOffset)
     row:SetPoint("RIGHT", scrollChild, "RIGHT", 0, 0)
     row:SetPoint("TOP",   scrollChild, "TOP",   0, -yOffset)
 
-    -- Stripe and background
-    if isActive then
+    -- Selected: highlight stripe + background + selected overlay
+    if isSelected then
         row._stripe:SetWidth(6)
         row._stripe:SetTexture(cc[1], cc[2], cc[3], 1.0)
         row._bg:SetTexture(cc[1], cc[2], cc[3], 0.12)
         row._selected:Show()
-        row._activeBadge:Show()
     else
         row._stripe:SetWidth(4)
         row._stripe:SetTexture(cc[1], cc[2], cc[3], 0.6)
         row._bg:SetTexture(cc[1], cc[2], cc[3], 0.06)
         row._selected:Hide()
+    end
+
+    -- Active: only the badge label
+    if isActive then
+        row._activeBadge:Show()
+    else
         row._activeBadge:Hide()
     end
 
@@ -255,6 +264,11 @@ local function Render()
 end
 
 EbonBuilds.BuildList.Refresh = Render
+
+function EbonBuilds.BuildList.SelectBuild(id)
+    selectedBuildId = id
+    Render()
+end
 
 ------------------------------------------------------------------------
 -- Construction

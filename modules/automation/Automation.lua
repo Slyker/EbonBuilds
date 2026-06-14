@@ -198,8 +198,11 @@ end
 ------------------------------------------------------------------------
 
 function EbonBuilds.Automation.Evaluate()
+    local gs = EbonBuildsDB.globalSettings
+    if gs and gs.automationEnabled == false then return false end
+
     local build = EbonBuilds.Build.GetActive()
-    if not build or not build.automationEnabled then return false end
+    if not build then return false end
 
     local choices = ProjectEbonhold.PerkService.GetCurrentChoice()
     if not choices or #choices == 0 then return false end

@@ -96,7 +96,7 @@ function EbonBuilds.Scoring.GetEffectiveLockedEchoes()
         local p = EbonBuilds.BuildForm.GetEditingLockedEchoes()
         if p then return p end
     end
-    local build = EbonBuilds.Build.GetActive()
+    local build = EbonBuilds.Build.GetCurrent()
     if build and build.lockedEchoes then return build.lockedEchoes end
     return { nil, nil, nil, nil, nil }
 end
@@ -127,7 +127,7 @@ function EbonBuilds.Scoring.GetEffectiveSettings()
             if s then return s end
         end
     end
-    local build = EbonBuilds.Build.GetActive()
+    local build = EbonBuilds.Build.GetCurrent()
     if build and build.settings then return build.settings end
     return EbonBuilds.Build.DefaultSettings()
 end

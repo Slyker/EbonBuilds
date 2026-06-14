@@ -325,6 +325,40 @@ function EbonBuilds.Build.SetActive(id)
     Notify()
 end
 
+-- Current build: the one displayed/edited in the overview panel.
+-- This is separate from the active build used by automation.
+local _currentBuildId = nil
+
+function EbonBuilds.Build.SetCurrent(id)
+    _currentBuildId = id
+end
+
+function EbonBuilds.Build.GetCurrent()
+    if _currentBuildId then
+        return EbonBuilds.Build.Get(_currentBuildId)
+    end
+    return EbonBuilds.Build.GetActive()
+end
+
+function EbonBuilds.Build.GetCurrentId()
+    return _currentBuildId
+end
+
+-- Returns weights from the build currently being viewed/edited.
+function EbonBuilds.Build.GetCurrentWeights()
+    if EbonBuildsDB._isEditingBuild then
+        EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
+        return EbonBuildsDB.pendingWeights
+    end
+    local build = EbonBuilds.Build.GetCurrent()
+    if build then
+        build.echoWeights = build.echoWeights or {}
+        return build.echoWeights
+    end
+    EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
+    return EbonBuildsDB.pendingWeights
+end
+
 function EbonBuilds.Build.GetActiveWeights()
     if EbonBuildsDB._isEditingBuild then
         EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}

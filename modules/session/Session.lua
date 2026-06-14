@@ -30,6 +30,11 @@ local function GetActiveBuildTitle()
     return build and build.title or "No Build"
 end
 
+local function GetActiveBuildId()
+    local build = EbonBuilds.Build.GetActive()
+    return build and build.id or nil
+end
+
 local function CreateSession()
     local sessions = EbonBuildsDB.sessions
     local id = tostring(time()) .. "-" .. tostring(#sessions + 1)
@@ -42,6 +47,7 @@ local function CreateSession()
         endTime       = nil,
         soulAshes     = 0,
         buildTitle    = GetActiveBuildTitle(),
+        buildId       = GetActiveBuildId(),
         logs          = {},
     }
 
@@ -182,6 +188,17 @@ end
 
 function EbonBuilds.Session.GetSessions()
     return EbonBuildsDB.sessions or {}
+end
+
+function EbonBuilds.Session.GetSessionsForBuild(buildId)
+    if not buildId then return EbonBuildsDB.sessions or {} end
+    local out = {}
+    for _, s in ipairs(EbonBuildsDB.sessions or {}) do
+        if s.buildId == buildId then
+            out[#out + 1] = s
+        end
+    end
+    return out
 end
 
 function EbonBuilds.Session.GetActiveSession()

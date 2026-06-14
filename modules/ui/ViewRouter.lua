@@ -36,6 +36,9 @@ end
 function EbonBuilds.ViewRouter.ShowActiveOrWelcome()
     local active = EbonBuilds.Build.GetActive()
     if active then
+        if EbonBuilds.BuildList and EbonBuilds.BuildList.SelectBuild then
+            EbonBuilds.BuildList.SelectBuild(active.id)
+        end
         EbonBuilds.ViewRouter.Show("buildOverview", { build = active })
     else
         EbonBuilds.ViewRouter.Show("welcome")

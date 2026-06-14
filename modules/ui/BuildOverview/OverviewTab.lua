@@ -124,7 +124,8 @@ local function RefreshOverview()
     RefreshSpecButtons()
     RefreshMetaAndStatus()
 
-    outer._autoToggle:SetText(build.automationEnabled and "Automation: ON" or "Automation: OFF")
+    local isActive = (build.id == EbonBuildsCharDB.activeBuildId)
+    outer._activateBtn:SetShown(not isActive)
 
     local desc = build.comments or ""
     if not descEdit:HasFocus() then
@@ -442,23 +443,10 @@ local function BuildOverviewTab(parent)
     end
     outer._lockedButtons = lockedButtons
 
-    local autoToggle = CreateFrame("Button", nil, outer, "UIPanelButtonTemplate")
-    autoToggle:SetWidth(140)
-    autoToggle:SetHeight(22)
-    autoToggle:SetPoint("TOPLEFT", lockedButtons[1], "BOTTOMLEFT", 0, -22)
-    autoToggle:SetText("Automation: ON")
-    autoToggle:SetScript("OnClick", function(self)
-        local build = BO.state.build
-        if not build then return end
-        build.automationEnabled = not build.automationEnabled
-        self:SetText(build.automationEnabled and "Automation: ON" or "Automation: OFF")
-    end)
-    outer._autoToggle = autoToggle
-
     local activateBtn = CreateFrame("Button", nil, outer, "UIPanelButtonTemplate")
     activateBtn:SetWidth(120)
     activateBtn:SetHeight(22)
-    activateBtn:SetPoint("LEFT", autoToggle, "RIGHT", 10, 0)
+    activateBtn:SetPoint("TOPLEFT", lockedButtons[1], "BOTTOMLEFT", 0, -22)
     activateBtn:SetText("Activate")
     activateBtn:SetScript("OnClick", function()
         local build = BO.state.build
@@ -467,12 +455,13 @@ local function BuildOverviewTab(parent)
         if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
             EbonBuilds.BuildList.Refresh()
         end
+        outer._activateBtn:Hide()
         print("|cff19ff19EbonBuilds:|r Activated \"" .. (build.title or "Untitled") .. "\"")
     end)
     outer._activateBtn = activateBtn
 
     local descHeader = outer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    descHeader:SetPoint("TOPLEFT", autoToggle, "BOTTOMLEFT", 0, -14)
+    descHeader:SetPoint("TOPLEFT", activateBtn, "BOTTOMLEFT", 0, -14)
     descHeader:SetText("Description:")
     outer._descHeader = descHeader
 

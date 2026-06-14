@@ -251,6 +251,9 @@ function view.Show(container, context)
 
     context = context or {}
     BO.state.build = context.build
+    if context.build and context.build.id then
+        EbonBuilds.Build.SetCurrent(context.build.id)
+    end
     if BO.SwitchOverview then BO.SwitchOverview() end
     BO.viewFrame:Show()
 end

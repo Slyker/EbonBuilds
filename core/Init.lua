@@ -16,14 +16,18 @@ local function OnAddonLoaded(addonName)
         builds        = {},
         minimapAngle  = 220,
         globalSettings = {
-            evalDelay     = 2,
-            toastDuration = 3,
+            evalDelay       = 2,
+            toastDuration   = 3,
+            automationEnabled = true,
         },
     }
     EbonBuildsDB.minimapAngle = EbonBuildsDB.minimapAngle or 220
     EbonBuildsDB.globalSettings = EbonBuildsDB.globalSettings or {}
-    EbonBuildsDB.globalSettings.evalDelay     = EbonBuildsDB.globalSettings.evalDelay     or 2
-    EbonBuildsDB.globalSettings.toastDuration = EbonBuildsDB.globalSettings.toastDuration or 3
+    EbonBuildsDB.globalSettings.evalDelay       = EbonBuildsDB.globalSettings.evalDelay       or 2
+    EbonBuildsDB.globalSettings.toastDuration   = EbonBuildsDB.globalSettings.toastDuration   or 3
+    if EbonBuildsDB.globalSettings.automationEnabled == nil then
+        EbonBuildsDB.globalSettings.automationEnabled = true
+    end
 
     EbonBuildsCharDB = EbonBuildsCharDB or {
         activeBuildId = nil,
