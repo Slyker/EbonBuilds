@@ -125,7 +125,9 @@ local function RefreshOverview()
     RefreshMetaAndStatus()
 
     local isActive = (build.id == EbonBuildsCharDB.activeBuildId)
-    outer._activateBtn:SetShown(not isActive)
+    if outer._activateBtn then
+        outer._activateBtn:SetShown(not isActive)
+    end
 
     local desc = build.comments or ""
     if not descEdit:HasFocus() then
