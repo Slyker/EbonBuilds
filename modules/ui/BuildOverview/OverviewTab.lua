@@ -126,7 +126,7 @@ local function RefreshOverview()
 
     local isActive = (build.id == EbonBuildsCharDB.activeBuildId)
     if outer._activateBtn then
-        outer._activateBtn:SetShown(not isActive)
+        if isActive then outer._activateBtn:Hide() else outer._activateBtn:Show() end
     end
 
     local desc = build.comments or ""
