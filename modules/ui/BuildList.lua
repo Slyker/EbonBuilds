@@ -115,6 +115,8 @@ local function CreateRow(parent)
     return row
 end
 
+local Render
+
 local function WireNavigate(btn, build)
     btn:SetScript("OnClick", function()
         selectedBuildId = build.id
@@ -249,7 +251,7 @@ end
 -- Render
 ------------------------------------------------------------------------
 
-local function Render()
+Render = function()
     local builds   = EbonBuilds.Build.List()
     local activeId = EbonBuildsCharDB.activeBuildId
     local yOffset = 0
