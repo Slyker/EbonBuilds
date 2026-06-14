@@ -19,6 +19,14 @@ local function ApplyModifier(score, baseWeight, value, multiplicative)
     end
 end
 
+local function FormatModifier(base, value, multiplicative)
+    if multiplicative then
+        return base == 0 and "+" .. value or string.format("x%.1f", 1 + (value - 1) / math.max(base, 1))
+    else
+        return "+" .. value
+    end
+end
+
 local function ApplyFamilyBonuses(s, base, entry, fb, fm, wl)
     local hasWhitelist = false
     for _ in pairs(wl) do hasWhitelist = true; break end
@@ -138,14 +146,8 @@ function EbonBuilds.Scoring.ScoreBreakdown(entry, weight, settings)
 
     local qbVal = qb[entry.quality] or 0
     if qbVal ~= 0 then
-        local display
-        if qm[entry.quality] then
-            display = base == 0 and "+" .. qbVal or string.format("x%.1f", 1 + (qbVal - 1) / math.max(base, 1))
-        else
-            display = "+" .. qbVal
-        end
         total = total + (qm[entry.quality] and (base == 0 and qbVal or base * (qbVal - 1)) or qbVal)
-        parts[#parts + 1] = { label = QUALITY_LABELS[entry.quality] or "Quality", value = display }
+        parts[#parts + 1] = { label = QUALITY_LABELS[entry.quality] or "Quality", value = FormatModifier(base, qbVal, qm[entry.quality]) }
     end
 
     if entry.families and #entry.families > 0 then
@@ -156,14 +158,8 @@ function EbonBuilds.Scoring.ScoreBreakdown(entry, weight, settings)
             if key and (not hasWhitelist or wl[key]) then
                 local fVal = fb[key] or 0
                 if fVal ~= 0 then
-                    local display
-                    if fm[key] then
-                        display = base == 0 and "+" .. fVal or string.format("x%.1f", 1 + (fVal - 1) / math.max(base, 1))
-                    else
-                        display = "+" .. fVal
-                    end
                     total = total + (fm[key] and (base == 0 and fVal or base * (fVal - 1)) or fVal)
-                    parts[#parts + 1] = { label = "Family: " .. fam, value = display }
+                    parts[#parts + 1] = { label = "Family: " .. fam, value = FormatModifier(base, fVal, fm[key]) }
                 end
             end
         end
@@ -171,14 +167,8 @@ function EbonBuilds.Scoring.ScoreBreakdown(entry, weight, settings)
 
     local nv = settings.noveltyValue or 0
     if nv ~= 0 then
-        local display
-        if settings.noveltyMode then
-            display = base == 0 and "+" .. nv or string.format("x%.1f", 1 + (nv - 1) / math.max(base, 1))
-        else
-            display = "+" .. nv
-        end
         total = total + (settings.noveltyMode and (base == 0 and nv or base * (nv - 1)) or nv)
-        parts[#parts + 1] = { label = "Novelty", value = display }
+        parts[#parts + 1] = { label = "Novelty", value = FormatModifier(base, nv, settings.noveltyMode) }
     end
 
     return parts, total

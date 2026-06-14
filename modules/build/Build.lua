@@ -89,8 +89,8 @@ function EbonBuilds.Build.Checksum(build)
     return table.concat(parts, "|")
 end
 
-local function EnsureStats(build)
-    build.stats = build.stats or {
+local function DefaultStats()
+    return {
         echoesSeen    = 0,
         runsCompleted = 0,
         runsReset     = 0,
@@ -102,6 +102,10 @@ local function EnsureStats(build)
         mostPicked    = {},
         mostBanned    = {},
     }
+end
+
+local function EnsureStats(build)
+    build.stats = build.stats or DefaultStats()
     build.stats.qualityPicks = build.stats.qualityPicks or { 0, 0, 0, 0, 0 }
     build.stats.mostPicked   = build.stats.mostPicked   or {}
     build.stats.mostBanned   = build.stats.mostBanned   or {}
@@ -160,6 +164,21 @@ end
 
 EbonBuilds.Build.PlayerClassToken   = PlayerClassToken
 EbonBuilds.Build.PlayerTopTalentTab = PlayerTopTalentTab
+
+ ------------------------------------------------------------------------
+-- Run data accessor (shared by Automation, Session, Toast)
+------------------------------------------------------------------------
+
+function EbonBuilds.Build.GetRunData()
+    if EbonholdPlayerRunData and EbonholdPlayerRunData.remainingBanishes ~= nil then
+        return EbonholdPlayerRunData
+    end
+    if ProjectEbonhold and ProjectEbonhold.PlayerRunService then
+        local get = ProjectEbonhold.PlayerRunService.GetCurrentData
+        if get then return get() end
+    end
+    return nil
+end
 
 ------------------------------------------------------------------------
 -- Auto-detect locked echoes
@@ -339,18 +358,7 @@ function EbonBuilds.Build.NewObject(data)
         validated         = data.validated or false,
         allClasses        = data.allClasses or false,
         copiedFrom        = data.copiedFrom or nil,
-        stats            = {
-            echoesSeen    = 0,
-            runsCompleted = 0,
-            runsReset     = 0,
-            picks         = 0,
-            rerollsUsed   = 0,
-            banishesUsed  = 0,
-            freezesUsed   = 0,
-            qualityPicks  = { 0, 0, 0, 0, 0 },
-            mostPicked    = {},
-            mostBanned    = {},
-        },
+        stats            = DefaultStats(),
     }
     build._checksum = EbonBuilds.Build.Checksum(build)
     return build

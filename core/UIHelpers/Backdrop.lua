@@ -3,7 +3,7 @@
 
 EbonBuilds.UIHelpers = {}
 
-local TOOLTIP_BD = {
+EbonBuilds.UIHelpers.TOOLTIP_BD = {
     bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     tile = true, tileSize = 8, edgeSize = 8,
@@ -25,7 +25,7 @@ local CHAT_BD = {
 }
 
 function EbonBuilds.UIHelpers.Backdrop(kind)
-    if kind == "tooltip" then return TOOLTIP_BD end
+    if kind == "tooltip" then return EbonBuilds.UIHelpers.TOOLTIP_BD end
     if kind == "chat" then return CHAT_BD end
     return DIALOG_BD
 end

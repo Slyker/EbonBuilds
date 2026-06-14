@@ -174,30 +174,11 @@ function EbonBuilds.Filters.Init(parent)
     local qualityDropdown = CreateQualityDropdown(bar, searchContainer)
     local familyDropdown  = CreateFamilyDropdown(bar, qualityDropdown)
 
-    local cb = CreateFrame("Button", nil, bar)
-    cb:SetSize(16, 16)
-    cb:SetPoint("LEFT", familyDropdown, "RIGHT", 2, 0)
-
-    local cbBg = cb:CreateTexture(nil, "BORDER")
-    cbBg:SetAllPoints(cb)
-    cbBg:SetTexture("Interface\\Buttons\\UI-CheckBox-Up")
-    cbBg:SetAlpha(0.8)
-
-    local cbCheck = cb:CreateTexture(nil, "ARTWORK")
-    cbCheck:SetWidth(14); cbCheck:SetHeight(14)
-    cbCheck:SetPoint("CENTER", cb, "CENTER", 0, 0)
-    cbCheck:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
-    cbCheck:Hide()
-
-    local cbLabel = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    cbLabel:SetPoint("LEFT", cb, "RIGHT", 2, 0)
-    cbLabel:SetText("Show all classes")
-
-    cb:SetScript("OnClick", function()
-        state.showAllClasses = not state.showAllClasses
-        if state.showAllClasses then cbCheck:Show() else cbCheck:Hide() end
+    local cb = EbonBuilds.UIHelpers.CreateCheckButton(bar, "Show all classes", function(self, checked)
+        state.showAllClasses = checked
         Notify()
     end)
+    cb:SetPoint("LEFT", familyDropdown, "RIGHT", 2, 0)
 
     return bar
 end

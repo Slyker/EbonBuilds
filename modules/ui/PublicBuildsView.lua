@@ -206,19 +206,7 @@ local function CreateCard(parent)
         local btn = CreateIconButton(card, LOCKED_ICON_SIZE)
         btn:SetPoint("TOPLEFT", meta, "BOTTOMLEFT", (i - 1) * (LOCKED_ICON_SIZE + 4), -4)
         btn:Hide()
-        btn:SetScript("OnEnter", function(self)
-            if not self._spellId then return end
-            local spellName = GetSpellInfo(self._spellId)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:ClearLines()
-            if spellName then GameTooltip:AddLine(spellName, 1, 0.82, 0) end
-            if utils and utils.GetSpellDescription then
-                local desc = utils.GetSpellDescription(self._spellId, 500, 1)
-                if desc and desc ~= "" then GameTooltip:AddLine(desc, 1, 1, 1, true) end
-            end
-            GameTooltip:Show()
-        end)
-        btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        EbonBuilds.UIHelpers.WireLockedIconTooltip(btn)
         card._lockedBtns[i] = btn
     end
 
@@ -438,17 +426,7 @@ end
 ------------------------------------------------------------------------
 
 local function WireScrollBar()
-    scrollBar:SetScript("OnValueChanged", function()
-        local offset = scrollBar:GetValue()
-        scrollChild:SetPoint("TOPLEFT", scrollFrame, "TOPLEFT", 0, offset)
-    end)
-
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(self, delta)
-        local v = scrollBar:GetValue()
-        local mn, mx = scrollBar:GetMinMaxValues()
-        scrollBar:SetValue(math.max(mn, math.min(mx, v - delta * 40)))
-    end)
+    EbonBuilds.UIHelpers.WireScroller(scrollFrame, scrollBar, 40, scrollChild)
 end
 
 ------------------------------------------------------------------------

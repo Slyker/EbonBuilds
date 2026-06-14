@@ -52,14 +52,9 @@ local function CreateButton()
 end
 
 local function AttachTooltip(button)
-    button:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    EbonBuilds.UIHelpers.WireTooltip(button, function(self)
         GameTooltip:AddLine("EbonBuilds")
         GameTooltip:AddLine("Click to open configuration", 1, 1, 1)
-        GameTooltip:Show()
-    end)
-    button:SetScript("OnLeave", function()
-        GameTooltip:Hide()
     end)
 end
 

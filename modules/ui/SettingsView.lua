@@ -359,8 +359,8 @@ end
 -- Family bonus section
 ------------------------------------------------------------------------
 
-local FAMILY_ROW1 = { "Tank", "Survivability", "Healer", "Caster" }
-local FAMILY_ROW2 = { "Melee", "Ranged", "No family" }
+local FAMILY_ROW1 = WHITELIST_ROW1
+local FAMILY_ROW2 = WHITELIST_ROW2
 
 local function CommitFamilyBox(box)
     local settings = EbonBuilds.BuildForm.GetEditingSettings()
@@ -571,16 +571,7 @@ local function BuildViewFrame(parent)
     scrollBar:SetValueStep(20)
     scrollBar:SetValue(0)
 
-    scrollBar:SetScript("OnValueChanged", function(self, value)
-        scrollChild:SetPoint("TOPLEFT", scrollFrame, "TOPLEFT", 0, value)
-    end)
-
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(self, delta)
-        local current  = scrollBar:GetValue()
-        local min, max = scrollBar:GetMinMaxValues()
-        scrollBar:SetValue(math.max(min, math.min(max, current - delta * 20)))
-    end)
+    EbonBuilds.UIHelpers.WireScroller(scrollFrame, scrollBar, 20, scrollChild)
 
     scrollFrame:SetScript("OnSizeChanged", UpdateScrollRange)
 

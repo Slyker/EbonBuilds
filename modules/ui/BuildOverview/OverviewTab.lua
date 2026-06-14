@@ -7,11 +7,10 @@ local UIH = EbonBuilds.UIHelpers
 local CreateIconButton = UIH.CreateIconButton
 local CLASS_COLORS = EbonBuilds.Constants.CLASS_COLORS
 local QUALITY_BORDER_COLORS = EbonBuilds.Constants.QUALITY_BORDER_COLORS
+local EMPTY_SLOT = EbonBuilds.Constants.EMPTY_SLOT_TEXTURE
+local ApplyQualityBorder = UIH.ApplyQualityBorder
 
-local CLASS_ORDER = {
-    "WARRIOR","PALADIN","HUNTER","ROGUE","PRIEST",
-    "DEATHKNIGHT","SHAMAN","MAGE","WARLOCK","DRUID",
-}
+local CLASS_ORDER = EbonBuilds.Constants.CLASS_ORDER
 
 ------------------------------------------------------------------------
 -- Helpers shared across overview sub-operations
@@ -152,11 +151,9 @@ local function RefreshOverview()
             btn:Show()
             local data = ProjectEbonhold.PerkDatabase[spellId]
             local quality = data and data.quality or 0
-            local bc = QUALITY_BORDER_COLORS[quality] or QUALITY_BORDER_COLORS[0]
-            btn._border:SetTexture(bc[1], bc[2], bc[3])
-            btn._border:Show()
+            ApplyQualityBorder(btn._border, quality)
         else
-            btn._icon:SetTexture("Interface\\Buttons\\UI-EmptySlot")
+            btn._icon:SetTexture(EMPTY_SLOT)
             btn._spellId = nil
             btn._border:Hide()
             btn:Show()
@@ -340,17 +337,13 @@ local function BuildOverviewTab(parent)
     local statusLabel = statusFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     statusLabel:SetAllPoints(statusFrame)
     statusLabel:SetJustifyH("RIGHT")
-    statusFrame:SetScript("OnEnter", function(self)
+    UIH.WireTooltip(statusFrame, function(self)
         local build = BO.state.build
-        if not build or not build.isPublic then return end
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
-        GameTooltip:ClearLines()
+        if not build or not build.isPublic then return false end
         GameTooltip:AddLine("Public Build", 1, 0.82, 0, 1)
         GameTooltip:AddLine("Public builds require validation to appear in the browser.", 0.8, 0.8, 0.8, 1)
         GameTooltip:AddLine("Level a character from 1 to 80 using this build to validate it.", 0.6, 0.6, 0.6, 1)
-        GameTooltip:Show()
     end)
-    statusFrame:SetScript("OnLeave", function() GameTooltip:Hide() end)
     outer._statusLabel = statusLabel
 
     local lockedHeader = outer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -362,16 +355,8 @@ local function BuildOverviewTab(parent)
     for i = 1, 5 do
         local btn = CreateIconButton(outer, 36)
         btn:SetPoint("TOPLEFT", lockedHeader, "BOTTOMLEFT", (i - 1) * 42, -6)
-        local border = btn:CreateTexture(nil, "BORDER")
-        border:SetPoint("TOPLEFT",     btn, "TOPLEFT",     -2,  2)
-        border:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT",  2, -2)
-        border:Hide()
-        btn._border = border
-        UIH.WireTooltip(btn, function(self)
-            if not self._spellId then return false end
-            local name = GetSpellInfo(self._spellId)
-            if name then GameTooltip:AddLine(name, 1, 0.82, 0) end
-        end)
+        UIH.CreateQualityBorder(btn)
+        UIH.WireLockedIconTooltip(btn)
         lockedButtons[i] = btn
     end
     outer._lockedButtons = lockedButtons

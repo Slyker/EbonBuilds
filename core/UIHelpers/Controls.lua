@@ -8,12 +8,7 @@ function EbonBuilds.UIHelpers.CreateModeToggle(parent, x, y)
     btn:SetWidth(20)
     btn:SetHeight(22)
     btn:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
-    btn:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    btn:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     btn:SetBackdropColor(0.15, 0.15, 0.15, 0.8)
     btn:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 

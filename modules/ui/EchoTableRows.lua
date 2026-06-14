@@ -12,17 +12,7 @@ local QUALITY_COLORS = EbonBuilds.Constants.QUALITY_HEX
 
 -- Data preparation -----------------------------------------------------
 
-local QUALITY_SUFFIXES = {
-    " %- Common$", " %- Uncommon$", " %- Rare$", " %- Epic$", " %- Legendary$"
-}
-
-local function StripQualitySuffix(name)
-    for _, pattern in ipairs(QUALITY_SUFFIXES) do
-        local stripped = name:match("^(.+)" .. pattern)
-        if stripped then return stripped end
-    end
-    return name
-end
+local StripQualitySuffix = EbonBuilds.Constants.StripQualitySuffix
 
 local _bestByNameCache = nil
 
@@ -171,12 +161,7 @@ local function CreateWeightBox(parentRow)
     local editContainer = CreateFrame("Frame", nil, parentRow)
     editContainer:SetSize(58, 22)
     editContainer:SetPoint("RIGHT", parentRow, "RIGHT", -8, 0)
-    editContainer:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    editContainer:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     editContainer:SetBackdropColor(0, 0, 0, 0.6)
     editContainer:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 

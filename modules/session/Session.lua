@@ -16,11 +16,7 @@ local pollElapsed  = 0
 ------------------------------------------------------------------------
 
 local function GetRunSoulAshes()
-    local rd = EbonholdPlayerRunData
-    if not rd and ProjectEbonhold and ProjectEbonhold.PlayerRunService then
-        local get = ProjectEbonhold.PlayerRunService.GetCurrentData
-        if get then rd = get() end
-    end
+    local rd = EbonBuilds.Build.GetRunData()
     return (rd and rd.soulPoints) or 0
 end
 
@@ -165,11 +161,7 @@ function EbonBuilds.Session.LogAction(scored, action, targetIndex)
         }
     end
 
-    local rd = EbonholdPlayerRunData
-    if not rd and ProjectEbonhold and ProjectEbonhold.PlayerRunService then
-        local get = ProjectEbonhold.PlayerRunService.GetCurrentData
-        if get then rd = get() end
-    end
+    local rd = EbonBuilds.Build.GetRunData()
 
     local charges = {
         ban    = (rd and rd.remainingBanishes) or 0,

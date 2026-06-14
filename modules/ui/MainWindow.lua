@@ -233,12 +233,7 @@ function EbonBuilds.MainWindow.Init()
 end
 
 function EbonBuilds.MainWindow._ShowInitialView()
-    local active = EbonBuilds.Build.GetActive()
-    if active then
-        EbonBuilds.ViewRouter.Show("buildOverview", { build = active })
-    else
-        EbonBuilds.ViewRouter.Show("welcome")
-    end
+    EbonBuilds.ViewRouter.ShowActiveOrWelcome()
 end
 
 SLASH_EbonBuilds1 = "/ebb"

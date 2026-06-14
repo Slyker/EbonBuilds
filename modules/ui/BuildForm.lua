@@ -15,12 +15,11 @@ function EbonBuilds.BuildForm.OnClassChanged(fn)
     classChangeCallbacks[#classChangeCallbacks + 1] = fn
 end
 
-local CLASS_ORDER = {
-    "WARRIOR","PALADIN","HUNTER","ROGUE","PRIEST",
-    "DEATHKNIGHT","SHAMAN","MAGE","WARLOCK","DRUID",
-}
+local CLASS_ORDER = EbonBuilds.Constants.CLASS_ORDER
 local QUALITY_COLOR = EbonBuilds.Constants.QUALITY_HEX
 local QUALITY_BORDER_COLORS = EbonBuilds.Constants.QUALITY_BORDER_COLORS
+local EMPTY_SLOT = EbonBuilds.Constants.EMPTY_SLOT_TEXTURE
+local ApplyQualityBorder = EbonBuilds.UIHelpers.ApplyQualityBorder
 
 local viewFrame
 local state = {
@@ -91,12 +90,9 @@ local function RefreshSpecButtons()
         local icon  = entry and entry.icon or "Interface\\Icons\\INV_Misc_QuestionMark"
         local name  = entry and entry.name or ("Spec " .. i)
         if btn._icon then btn._icon:SetTexture(icon) end
-        btn:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        EbonBuilds.UIHelpers.WireTooltip(btn, function()
             GameTooltip:AddLine(name)
-            GameTooltip:Show()
         end)
-        btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
         HighlightBorder(btn, i == state.spec)
     end
 end
@@ -187,9 +183,7 @@ local function BuildLockedSlots(parent, x, y)
                             btn.spellId = inst.spellId
                             btn._quality = inst.quality or 0
                             btn._icon:SetTexture(select(3, GetSpellInfo(inst.spellId)))
-                            local bc = QUALITY_BORDER_COLORS[inst.quality or 0] or QUALITY_BORDER_COLORS[0]
-                            btn._qualityBorder:SetTexture(bc[1], bc[2], bc[3])
-                            btn._qualityBorder:Show()
+                            ApplyQualityBorder(btn._qualityBorder, inst.quality or 0)
                         end
                         added = added + 1
                         filled[inst.spellId] = true
@@ -204,16 +198,13 @@ local function BuildLockedSlots(parent, x, y)
     for i = 1, 5 do
         local btn = CreateIconButton(parent, 36)
         btn:SetPoint("TOPLEFT", parent, "TOPLEFT", x + 140 + (i - 1) * 44, y + 6)
-        btn._icon:SetTexture("Interface\\Buttons\\UI-EmptySlot")
+        btn._icon:SetTexture(EMPTY_SLOT)
         btn.spellId = nil
         btn:EnableMouse(true)
         btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         EbonBuilds.EchoTableRows.WireIconTooltip(btn)
 
-        local border = btn:CreateTexture(nil, "BORDER")
-        border:SetPoint("TOPLEFT",     btn, "TOPLEFT",     -2,  2)
-        border:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT",  2, -2)
-        border:Hide()
+        local border = EbonBuilds.UIHelpers.CreateQualityBorder(btn)
         btn._qualityBorder = border
 
         btn:SetScript("OnClick", function(_, button)
@@ -221,7 +212,7 @@ local function BuildLockedSlots(parent, x, y)
                 state.locked[i] = nil
                 btn.spellId = nil
                 btn._quality = nil
-                btn._icon:SetTexture("Interface\\Buttons\\UI-EmptySlot")
+                btn._icon:SetTexture(EMPTY_SLOT)
                 btn._qualityBorder:Hide()
                 return
             end
@@ -248,9 +239,7 @@ local function BuildLockedSlots(parent, x, y)
                 btn.spellId = spellId
                 btn._quality = quality
                 btn._icon:SetTexture(select(3, GetSpellInfo(spellId)))
-                local bc = QUALITY_BORDER_COLORS[quality] or QUALITY_BORDER_COLORS[0]
-                btn._qualityBorder:SetTexture(bc[1], bc[2], bc[3])
-                btn._qualityBorder:Show()
+                ApplyQualityBorder(btn._qualityBorder, quality)
             end, filtered)
         end)
         slotButtons[i] = btn
@@ -293,27 +282,18 @@ local function BuildDescriptionField(parent, x, y, height)
             end
         end)
     end)
-    insertBtn:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:ClearLines()
+    EbonBuilds.UIHelpers.WireTooltip(insertBtn, function()
         GameTooltip:AddLine("Insert Echo Link", 1, 0.82, 0, 1)
         GameTooltip:AddLine("Inserts a clickable echo reference into the description.", 0.8, 0.8, 0.8, 1)
         GameTooltip:AddLine(" ", 1, 1, 1, 1)
         GameTooltip:AddLine("To configure echo weights and bonuses for this build,", 0.6, 0.6, 0.6, 1)
         GameTooltip:AddLine("use the Echoes and Bonus tabs after saving.", 0.6, 0.6, 0.6, 1)
-        GameTooltip:Show()
     end)
-    insertBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
     local container = CreateFrame("Frame", nil, parent)
     container:SetPoint("TOPLEFT",     parent, "TOPLEFT",     x,   y - 24)
     container:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -30, 50)
-    container:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    container:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     container:SetBackdropColor(0, 0, 0, 0.6)
     container:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 
@@ -430,10 +410,7 @@ local function OnSave()
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
         EbonBuilds.BuildList.Refresh()
     end
-    local active = EbonBuilds.Build.GetActive()
-    if active then
-        EbonBuilds.ViewRouter.Show("buildOverview", { build = active })
-    end
+    EbonBuilds.ViewRouter.ShowActiveOrWelcome()
 end
 
 local LoadFromBuild, ApplyStateToInputs
@@ -452,12 +429,7 @@ local function OnCancel()
         end
     end
 
-    local active = EbonBuilds.Build.GetActive()
-    if active then
-        EbonBuilds.ViewRouter.Show("buildOverview", { build = active })
-    else
-        EbonBuilds.ViewRouter.Show("welcome")
-    end
+    EbonBuilds.ViewRouter.ShowActiveOrWelcome()
 end
 
 local function OnDelete()
@@ -469,12 +441,7 @@ local function OnDelete()
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
         EbonBuilds.BuildList.Refresh()
     end
-    local active = EbonBuilds.Build.GetActive()
-    if active then
-        EbonBuilds.ViewRouter.Show("buildOverview", { build = active })
-    else
-        EbonBuilds.ViewRouter.Show("welcome")
-    end
+    EbonBuilds.ViewRouter.ShowActiveOrWelcome()
 end
 
 EbonBuilds.BuildForm.Save   = OnSave
@@ -501,11 +468,9 @@ ApplyStateToInputs = function()
             local data = ProjectEbonhold.PerkDatabase[id]
             local quality = data and data.quality or 0
             btn._quality = quality
-            local bc = QUALITY_BORDER_COLORS[quality] or QUALITY_BORDER_COLORS[0]
-            btn._qualityBorder:SetTexture(bc[1], bc[2], bc[3])
-            btn._qualityBorder:Show()
+            ApplyQualityBorder(btn._qualityBorder, quality)
         else
-            btn._icon:SetTexture("Interface\\Buttons\\UI-EmptySlot")
+            btn._icon:SetTexture(EMPTY_SLOT)
             btn._quality = nil
             btn._qualityBorder:Hide()
         end

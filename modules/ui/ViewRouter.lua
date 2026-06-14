@@ -32,3 +32,12 @@ end
 function EbonBuilds.ViewRouter.Current()
     return currentName
 end
+
+function EbonBuilds.ViewRouter.ShowActiveOrWelcome()
+    local active = EbonBuilds.Build.GetActive()
+    if active then
+        EbonBuilds.ViewRouter.Show("buildOverview", { build = active })
+    else
+        EbonBuilds.ViewRouter.Show("welcome")
+    end
+end

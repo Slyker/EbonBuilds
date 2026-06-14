@@ -6,6 +6,8 @@ EbonBuilds.BuildWizard = {}
 
 local QUALITY_COLOR = EbonBuilds.Constants.QUALITY_HEX
 local QUALITY_BORDER_COLORS = EbonBuilds.Constants.QUALITY_BORDER_COLORS
+local EMPTY_SLOT = EbonBuilds.Constants.EMPTY_SLOT_TEXTURE
+local ApplyQualityBorder = EbonBuilds.UIHelpers.ApplyQualityBorder
 local QUALITY_LABELS = EbonBuilds.Constants.QUALITY_LABELS
 local FAMILIES = {
     { key = "Tank",         label = "Tank" },
@@ -153,26 +155,20 @@ local function RenderStep1()
     for i = 1, 5 do
         local btn = CreateIconButton(contentArea, slotSize)
         btn:SetPoint("TOP", contentArea, "TOP", startX + (i - 1) * (slotSize + spacing), -90)
-        btn._icon:SetTexture("Interface\\Buttons\\UI-EmptySlot")
+        btn._icon:SetTexture(EMPTY_SLOT)
         btn.spellId = nil
         btn:EnableMouse(true)
         btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         EbonBuilds.EchoTableRows.WireIconTooltip(btn)
 
-        local border = btn:CreateTexture(nil, "BORDER")
-        border:SetPoint("TOPLEFT",     btn, "TOPLEFT",     -3,  3)
-        border:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT",  3, -3)
-        border:Hide()
-        btn._border = border
+        EbonBuilds.UIHelpers.CreateQualityBorder(btn, 3)
 
         if state.locked[i] then
             btn.spellId = state.locked[i]
             btn._icon:SetTexture(select(3, GetSpellInfo(state.locked[i])))
             local data = ProjectEbonhold.PerkDatabase[state.locked[i]]
             local quality = data and data.quality or 0
-            local bc = QUALITY_BORDER_COLORS[quality] or QUALITY_BORDER_COLORS[0]
-            border:SetTexture(bc[1], bc[2], bc[3])
-            border:Show()
+            ApplyQualityBorder(btn._border, quality)
         end
 
         local idx = i
@@ -180,7 +176,7 @@ local function RenderStep1()
             if button == "RightButton" then
                 state.locked[idx] = nil
                 btn.spellId = nil
-                btn._icon:SetTexture("Interface\\Buttons\\UI-EmptySlot")
+                btn._icon:SetTexture(EMPTY_SLOT)
                 btn._border:Hide()
                 return
             end
@@ -202,9 +198,7 @@ local function RenderStep1()
                 state.locked[idx] = spellId
                 btn.spellId = spellId
                 btn._icon:SetTexture(select(3, GetSpellInfo(spellId)))
-                local bc = QUALITY_BORDER_COLORS[quality] or QUALITY_BORDER_COLORS[0]
-                btn._border:SetTexture(bc[1], bc[2], bc[3])
-                btn._border:Show()
+                ApplyQualityBorder(btn._border, quality)
             end, deduped)
         end)
         lockedButtons[i] = btn
@@ -265,26 +259,35 @@ end
 local familyCycleLabels = { [0] = "|cff888888None|r", [10] = "Secondary +10", [20] = "Primary +20" }
 local familyCycleValues = { 0, 10, 20 }
 
-local function FamilyNextValue(current)
-    for i, v in ipairs(familyCycleValues) do
+local function CycleNext(values, current)
+    for i, v in ipairs(values) do
         if v == current then
-            local nextIdx = i + 1
-            if nextIdx > #familyCycleValues then nextIdx = 1 end
-            return familyCycleValues[nextIdx]
+            return values[i % #values + 1]
         end
     end
-    return 0
+    return values[1]
 end
 
-local function FamilyPrevValue(current)
-    for i, v in ipairs(familyCycleValues) do
+local function CyclePrev(values, current)
+    for i, v in ipairs(values) do
         if v == current then
-            local prevIdx = i - 1
-            if prevIdx < 1 then prevIdx = #familyCycleValues end
-            return familyCycleValues[prevIdx]
+            return values[(i - 2) % #values + 1]
         end
     end
-    return 0
+    return values[1]
+end
+
+local function FamilyNextValue(current) return CycleNext(familyCycleValues, current) end
+local function FamilyPrevValue(current) return CyclePrev(familyCycleValues, current) end
+
+local function CreateArrowButton(parent, direction, anchor, anchorOffset)
+    local arrow = CreateFrame("Button", nil, parent)
+    arrow:SetWidth(18)
+    arrow:SetHeight(18)
+    arrow:SetPoint(direction == "LEFT" and "RIGHT" or "LEFT", anchor, direction == "LEFT" and "LEFT" or "RIGHT", anchorOffset, 0)
+    arrow:SetNormalFontObject("GameFontNormal")
+    arrow:SetText(direction == "LEFT" and "<" or ">")
+    return arrow
 end
 
 local function RenderFamilyRow(familyEntry, anchorY)
@@ -313,23 +316,13 @@ local function RenderFamilyRow(familyEntry, anchorY)
         btn:SetText(familyCycleLabels[state.familyPriorities[famKey] or 0])
     end
 
-    local leftArrow = CreateFrame("Button", nil, row)
-    leftArrow:SetWidth(18)
-    leftArrow:SetHeight(18)
-    leftArrow:SetPoint("RIGHT", btn, "LEFT", -8, 0)
-    leftArrow:SetNormalFontObject("GameFontNormal")
-    leftArrow:SetText("<")
+    local leftArrow = CreateArrowButton(row, "LEFT", btn, -8)
     leftArrow:SetScript("OnClick", function()
         state.familyPriorities[famKey] = FamilyPrevValue(state.familyPriorities[famKey] or 0)
         RefreshBtn()
     end)
 
-    local rightArrow = CreateFrame("Button", nil, row)
-    rightArrow:SetWidth(18)
-    rightArrow:SetHeight(18)
-    rightArrow:SetPoint("LEFT", btn, "RIGHT", 8, 0)
-    rightArrow:SetNormalFontObject("GameFontNormal")
-    rightArrow:SetText(">")
+    local rightArrow = CreateArrowButton(row, "RIGHT", btn, 8)
     rightArrow:SetScript("OnClick", function()
         state.familyPriorities[famKey] = FamilyNextValue(state.familyPriorities[famKey] or 0)
         RefreshBtn()
@@ -365,27 +358,8 @@ end
 
 local qualityValues = { 0, 5, 10, 15, 20, 25, 30, 35, 40 }
 
-local function NextQualityValue(current)
-    for i, v in ipairs(qualityValues) do
-        if v == current then
-            local nextIdx = i + 1
-            if nextIdx > #qualityValues then nextIdx = 1 end
-            return qualityValues[nextIdx]
-        end
-    end
-    return 0
-end
-
-local function PrevQualityValue(current)
-    for i, v in ipairs(qualityValues) do
-        if v == current then
-            local prevIdx = i - 1
-            if prevIdx < 1 then prevIdx = #qualityValues end
-            return qualityValues[prevIdx]
-        end
-    end
-    return 0
-end
+local function NextQualityValue(current) return CycleNext(qualityValues, current) end
+local function PrevQualityValue(current) return CyclePrev(qualityValues, current) end
 
 local function RenderQualityRow(q, anchorY)
     local row = CreateFrame("Frame", nil, contentArea)
@@ -414,23 +388,13 @@ local function RenderQualityRow(q, anchorY)
         btn:SetText("+" .. tostring(state.qualityBonus[q]))
     end
 
-    local leftArrow = CreateFrame("Button", nil, row)
-    leftArrow:SetWidth(18)
-    leftArrow:SetHeight(18)
-    leftArrow:SetPoint("RIGHT", btn, "LEFT", -8, 0)
-    leftArrow:SetNormalFontObject("GameFontNormal")
-    leftArrow:SetText("<")
+    local leftArrow = CreateArrowButton(row, "LEFT", btn, -8)
     leftArrow:SetScript("OnClick", function()
         state.qualityBonus[q] = PrevQualityValue(state.qualityBonus[q])
         RefreshBtn()
     end)
 
-    local rightArrow = CreateFrame("Button", nil, row)
-    rightArrow:SetWidth(18)
-    rightArrow:SetHeight(18)
-    rightArrow:SetPoint("LEFT", btn, "RIGHT", 8, 0)
-    rightArrow:SetNormalFontObject("GameFontNormal")
-    rightArrow:SetText(">")
+    local rightArrow = CreateArrowButton(row, "RIGHT", btn, 8)
     rightArrow:SetScript("OnClick", function()
         state.qualityBonus[q] = NextQualityValue(state.qualityBonus[q])
         RefreshBtn()
@@ -574,12 +538,7 @@ local function RenderStep5()
     sf:SetPoint("BOTTOMRIGHT", contentArea, "BOTTOMRIGHT", -20,   0)
 
     -- Backdrop
-    sf:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    sf:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     sf:SetBackdropColor(0, 0, 0, 0.4)
     sf:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
 
@@ -684,12 +643,7 @@ local function RenderStep6()
     local titleBg = CreateFrame("Frame", nil, contentArea)
     titleBg:SetPoint("TOPLEFT",     titleBox, "TOPLEFT",     -2,  2)
     titleBg:SetPoint("BOTTOMRIGHT", titleBox, "BOTTOMRIGHT",  2, -2)
-    titleBg:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    titleBg:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     titleBg:SetBackdropColor(0, 0, 0, 0.6)
     titleBg:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
     titleBg:SetFrameLevel(titleBox:GetFrameLevel() - 1)
@@ -712,12 +666,7 @@ local function RenderStep6()
     local descBg = CreateFrame("Frame", nil, contentArea)
     descBg:SetPoint("TOPLEFT",     descBox, "TOPLEFT",     -2,  2)
     descBg:SetPoint("BOTTOMRIGHT", descBox, "BOTTOMRIGHT",  2, -2)
-    descBg:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    descBg:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     descBg:SetBackdropColor(0, 0, 0, 0.6)
     descBg:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
     descBg:SetFrameLevel(descBox:GetFrameLevel() - 1)

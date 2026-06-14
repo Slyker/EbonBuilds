@@ -64,14 +64,7 @@ function EbonBuilds.Automation.GetPeak()
 end
 
 local function GetRunData()
-    if EbonholdPlayerRunData and EbonholdPlayerRunData.remainingBanishes ~= nil then
-        return EbonholdPlayerRunData
-    end
-    if ProjectEbonhold and ProjectEbonhold.PlayerRunService then
-        local get = ProjectEbonhold.PlayerRunService.GetCurrentData
-        if get then return get() end
-    end
-    return nil
+    return EbonBuilds.Build.GetRunData()
 end
 
 local function ScoreChoice(choice, settings)

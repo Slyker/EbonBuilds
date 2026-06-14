@@ -97,6 +97,24 @@ function EbonBuilds.UIHelpers.CreateIconButton(parent, size)
     return btn
 end
 
+-- Quality border (for locked echo slots) ---------------------------------
+
+function EbonBuilds.UIHelpers.CreateQualityBorder(btn, inset)
+    inset = inset or 2
+    local border = btn:CreateTexture(nil, "BORDER")
+    border:SetPoint("TOPLEFT",     btn, "TOPLEFT",     -inset,  inset)
+    border:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT",  inset, -inset)
+    border:Hide()
+    btn._border = border
+    return border
+end
+
+function EbonBuilds.UIHelpers.ApplyQualityBorder(border, quality)
+    local r, g, b = EbonBuilds.Constants.GetQualityBorderColor(quality)
+    border:SetTexture(r, g, b)
+    border:Show()
+end
+
 -- Highlight border --------------------------------------------------------
 
 function EbonBuilds.UIHelpers.HighlightBorder(btn, on)

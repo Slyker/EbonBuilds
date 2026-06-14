@@ -71,13 +71,7 @@ StaticPopupDialogs["EBONBUILDS_DELETE_BUILD"] = {
         if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
             EbonBuilds.BuildList.Refresh()
         end
-        local builds = EbonBuilds.Build.List()
-        if #builds > 0 then
-            EbonBuilds.Build.SetActive(builds[1].id)
-            EbonBuilds.ViewRouter.Show("buildOverview", { build = builds[1] })
-        else
-            EbonBuilds.ViewRouter.Show("welcome")
-        end
+        EbonBuilds.ViewRouter.ShowActiveOrWelcome()
     end,
     timeout = 0,
     whileDead = true,

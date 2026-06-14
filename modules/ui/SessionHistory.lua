@@ -59,11 +59,7 @@ local function EnsureSpellInfoCache()
     for spellId, data in pairs(ProjectEbonhold.PerkDatabase) do
         local raw = data.comment
         if raw and raw ~= "" then
-            local name = raw
-            for _, pattern in ipairs({ " %- Common$", " %- Uncommon$", " %- Rare$", " %- Epic$", " %- Legendary$" }) do
-                local stripped = name:match("^(.+)" .. pattern)
-                if stripped then name = stripped; break end
-            end
+            local name = EbonBuilds.Constants.StripQualitySuffix(raw)
             if not spellInfoCache[name] or (data.quality or 0) > (spellInfoCache[name].quality or 0) then
                 spellInfoCache[name] = {
                     spellId   = spellId,
@@ -286,12 +282,7 @@ local function BuildContextMenu()
     f:SetFrameStrata("FULLSCREEN_DIALOG")
     f:SetToplevel(true)
     f:SetWidth(160)
-    f:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    f:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     f:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
     f:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
     f._items = {}
@@ -461,12 +452,7 @@ local function BuildCard(parent)
     local item = CreateFrame("Frame", nil, parent)
     item:SetSize(CARD_W, CARD_H)
 
-    item:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile     = true, tileSize = 8, edgeSize = 8,
-        insets   = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    item:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     item:SetBackdropColor(0.12, 0.12, 0.12, 0.9)
     item:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
     item:EnableMouse(true)
@@ -843,13 +829,10 @@ local function BuildExportDialog()
     f:Hide()
 
     -- Title
-    local title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    title:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -12)
-    title:SetText("Session Export")
+    EbonBuilds.UIHelpers.CreateTitleBar(f, "Session Export")
 
     -- Close button
-    local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
+    EbonBuilds.UIHelpers.CreateCloseButton(f)
 
     -- ScrollFrame wrapping an EditBox
     local scroll = CreateFrame("ScrollFrame", nil, f)
@@ -866,16 +849,9 @@ local function BuildExportDialog()
     local bar = CreateFrame("Slider", nil, scroll, "UIPanelScrollBarTemplate")
     bar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", -2, -4)
     bar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", -2, 4)
-    bar:SetValueStep(18)
 
-    bar:SetScript("OnValueChanged", function(self, value)
+    EbonBuilds.UIHelpers.WireScroller(scroll, bar, 18, function(value)
         editBox:SetPoint("TOPLEFT", scroll, "TOPLEFT", 0, value)
-    end)
-    scroll:EnableMouseWheel(true)
-    scroll:SetScript("OnMouseWheel", function(self, delta)
-        local v = bar:GetValue()
-        local mn, mx = bar:GetMinMaxValues()
-        bar:SetValue(math.max(mn, math.min(mx, v - delta * 18)))
     end)
 
     f._editBox = editBox
@@ -1056,30 +1032,11 @@ local function BuildUI(container)
     UIDropDownMenu_SetWidth(actionFilterDD, 100)
     UIDropDownMenu_SetText(actionFilterDD, "All Actions")
 
-    local logSearchFrame = CreateFrame("Frame", nil, filterBar)
-    logSearchFrame:SetSize(140, 22)
-    logSearchFrame:SetPoint("LEFT", actionFilterDD, "RIGHT", 80, 0)
-    logSearchFrame:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
-    logSearchFrame:SetBackdropColor(0, 0, 0, 0.6)
-    logSearchFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
-
-    local logSearchEdit = CreateFrame("EditBox", nil, logSearchFrame)
-    logSearchEdit:SetSize(134, 18)
-    logSearchEdit:SetPoint("CENTER", logSearchFrame, "CENTER", 0, 0)
-    logSearchEdit:SetFont("Fonts\\FRIZQT__.TTF", 10, "")
-    logSearchEdit:SetTextColor(1, 1, 1, 1)
-    logSearchEdit:SetAutoFocus(false)
-    logSearchEdit:SetMaxLetters(40)
-    logSearchEdit:SetScript("OnTextChanged", function(self)
-        logSearchText = self:GetText():lower()
+    local logSearchEdit, logSearchContainer = EbonBuilds.UIHelpers.CreateSearchBox(filterBar, 140, 22, function(text)
+        logSearchText = text
         EbonBuilds.SessionHistory.RefreshLogView()
     end)
-    logSearchEdit:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    logSearchContainer:SetPoint("LEFT", actionFilterDD, "RIGHT", 80, 0)
 
     local logHeader = bottomPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     logHeader:SetPoint("TOPLEFT", bottomPanel, "TOPLEFT", 4, -32)
@@ -1095,16 +1052,8 @@ local function BuildUI(container)
     logBar = CreateFrame("Slider", nil, logScroll, "UIPanelScrollBarTemplate")
     logBar:SetPoint("TOPLEFT",    logScroll, "TOPRIGHT",    -2, -4)
     logBar:SetPoint("BOTTOMLEFT", logScroll, "BOTTOMRIGHT", -2,  4)
-    logBar:SetValueStep(20)
-    logBar:SetScript("OnValueChanged", function(self, value)
-        logChild:SetPoint("TOPLEFT", logScroll, "TOPLEFT", 0, value)
-    end)
-    logScroll:EnableMouseWheel(true)
-    logScroll:SetScript("OnMouseWheel", function(self, delta)
-        local v = logBar:GetValue()
-        local mn, mx = logBar:GetMinMaxValues()
-        logBar:SetValue(math.max(mn, math.min(mx, v - delta * 20)))
-    end)
+
+    EbonBuilds.UIHelpers.WireScroller(logScroll, logBar, 20, logChild)
 end
 
 ------------------------------------------------------------------------

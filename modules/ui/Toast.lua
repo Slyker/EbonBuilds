@@ -38,11 +38,7 @@ local function GetRunInfo()
         level = UnitLevel("player") or 0
     end
 
-    local rd = EbonholdPlayerRunData
-    if not rd and ProjectEbonhold and ProjectEbonhold.PlayerRunService then
-        local get = ProjectEbonhold.PlayerRunService.GetCurrentData
-        if get then rd = get() end
-    end
+    local rd = EbonBuilds.Build.GetRunData()
     local banRemain    = (rd and rd.remainingBanishes) or 0
     local totalRerolls = (rd and rd.totalRerolls) or 0
     local usedRerolls  = (rd and rd.usedRerolls) or 0
@@ -153,12 +149,7 @@ local function BuildFrame()
     f:SetFrameStrata("TOOLTIP")
     f:Hide()
 
-    f:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 8, edgeSize = 8,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
+    f:SetBackdrop(EbonBuilds.UIHelpers.TOOLTIP_BD)
     f:SetBackdropColor(0, 0, 0, 0.85)
     f:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
 

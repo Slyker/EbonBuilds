@@ -55,6 +55,32 @@ EbonBuilds.Constants.FAMILY_MAP = {
 
 EbonBuilds.Constants.QUALITY_BORDER_COLORS = EbonBuilds.Constants.QUALITY_COLORS
 
+EbonBuilds.Constants.CLASS_ORDER = {
+    "WARRIOR","PALADIN","HUNTER","ROGUE","PRIEST",
+    "DEATHKNIGHT","SHAMAN","MAGE","WARLOCK","DRUID",
+}
+
+EbonBuilds.Constants.EMPTY_SLOT_TEXTURE = "Interface\\Buttons\\UI-EmptySlot"
+
+EbonBuilds.Constants.DEFAULT_BORDER_COLOR = { 0.4, 0.4, 0.4, 1 }
+EbonBuilds.Constants.DEFAULT_BG_COLOR = { 0, 0, 0, 0.6 }
+
 function EbonBuilds.Constants.NormFamily(f)
     return EbonBuilds.Constants.FAMILY_MAP[f]
+end
+
+function EbonBuilds.Constants.GetQualityBorderColor(quality)
+    local bc = EbonBuilds.Constants.QUALITY_BORDER_COLORS[quality or 0] or EbonBuilds.Constants.QUALITY_BORDER_COLORS[0]
+    return bc[1], bc[2], bc[3]
+end
+
+local QUALITY_SUFFIX_PATTERNS = { " %- Common$", " %- Uncommon$", " %- Rare$", " %- Epic$", " %- Legendary$" }
+
+function EbonBuilds.Constants.StripQualitySuffix(name)
+    if not name then return name end
+    for _, pattern in ipairs(QUALITY_SUFFIX_PATTERNS) do
+        local stripped = name:match("^(.+)" .. pattern)
+        if stripped then return stripped end
+    end
+    return name
 end
