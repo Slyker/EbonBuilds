@@ -190,10 +190,13 @@ local function ComputeLastPickedTimestamps()
         if logs then
             for j = #logs, 1, -1 do
                 local entry = logs[j]
-                if entry.action == "Select" and entry.choices and entry.targetIndex then
-                    local target = entry.choices[entry.targetIndex]
-                    if target and target.name and not timestamps[target.name] then
-                        timestamps[target.name] = entry.timestamp
+                if entry.choices and entry.targetIndex then
+                    local action = entry.action or ""
+                    if action == "Select" or action == "Select (Locked)" then
+                        local target = entry.choices[entry.targetIndex]
+                        if target and target.name and not timestamps[target.name] then
+                            timestamps[target.name] = entry.timestamp
+                        end
                     end
                 end
             end
