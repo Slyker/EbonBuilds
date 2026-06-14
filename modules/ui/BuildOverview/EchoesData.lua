@@ -184,7 +184,7 @@ end
 local function ComputeLastPickedTimestamps()
     local timestamps = {}
     local sessions = EbonBuilds.Session and EbonBuilds.Session.GetSessions and EbonBuilds.Session.GetSessions() or {}
-    for i = #sessions, 1, -1 do
+    for i = 1, #sessions do
         local session = sessions[i]
         local logs = session and session.logs
         if logs then
