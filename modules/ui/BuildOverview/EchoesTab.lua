@@ -8,7 +8,7 @@ local QUALITY_COLORS = EbonBuilds.Constants.QUALITY_COLORS
 local EchoesData = BO.EchoesData
 
 local ECHO_QUALITY_LABELS = { "All", "Common", "Uncommon", "Rare", "Epic", "Legendary" }
-local ECHO_SORT_LABELS = { "Quality", "Name", "Stacks" }
+local ECHO_SORT_LABELS = { "Quality", "Name", "Stacks", "Timestamp" }
 
 local ECHO_ICON_SIZE   = 52
 local ECHO_ICON_PAD    = 20
@@ -118,6 +118,15 @@ local function RefreshEchoes()
     elseif BO.echoesSortMode == 3 then
         table.sort(filtered, function(a, b)
             return (a.stack or 1) > (b.stack or 1)
+        end)
+    elseif BO.echoesSortMode == 4 then
+        local timestamps = EchoesData.ComputeLastPickedTimestamps()
+        table.sort(filtered, function(a, b)
+            local ta = timestamps[a.name] or 0
+            local tb = timestamps[b.name] or 0
+            if ta ~= tb then return ta > tb end
+            if a.quality ~= b.quality then return a.quality > b.quality end
+            return a.name < b.name
         end)
     end
 

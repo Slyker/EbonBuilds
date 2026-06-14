@@ -177,6 +177,32 @@ local function ComputeAllEchoes()
 end
 
 ------------------------------------------------------------------------
+-- ComputeLastPickedTimestamps: scans session logs to find the last time
+-- each echo was picked. Returns a table of echoName -> timestamp.
+------------------------------------------------------------------------
+
+local function ComputeLastPickedTimestamps()
+    local timestamps = {}
+    local sessions = EbonBuilds.Session and EbonBuilds.Session.GetSessions and EbonBuilds.Session.GetSessions() or {}
+    for i = #sessions, 1, -1 do
+        local session = sessions[i]
+        local logs = session and session.logs
+        if logs then
+            for j = #logs, 1, -1 do
+                local entry = logs[j]
+                if entry.action == "Select" and entry.choices and entry.targetIndex then
+                    local target = entry.choices[entry.targetIndex]
+                    if target and target.name and not timestamps[target.name] then
+                        timestamps[target.name] = entry.timestamp
+                    end
+                end
+            end
+        end
+    end
+    return timestamps
+end
+
+------------------------------------------------------------------------
 -- Public API
 ------------------------------------------------------------------------
 
@@ -184,4 +210,5 @@ BO.EchoesData = {
     NormalizeEchoName = NormalizeEchoName,
     ComputeOwnedEchoes = ComputeOwnedEchoes,
     ComputeAllEchoes = ComputeAllEchoes,
+    ComputeLastPickedTimestamps = ComputeLastPickedTimestamps,
 }
