@@ -6,7 +6,14 @@
 
 core/Init.lua
 modules/data/Constants.lua
-core/UIHelpers.lua
+core/UIHelpers/Backdrop.lua
+core/UIHelpers/FrameFactory.lua
+core/UIHelpers/EditBoxes.lua
+core/UIHelpers/ScrollHelpers.lua
+core/UIHelpers/TooltipHelpers.lua
+core/UIHelpers/Controls.lua
+core/UIHelpers/IconPicker.lua
+core/UIHelpers/Formatting.lua
 modules/data/SpecData.lua
 modules/data/IconList.lua
 modules/build/Build.lua
