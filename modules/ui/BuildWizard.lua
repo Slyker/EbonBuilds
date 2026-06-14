@@ -752,53 +752,6 @@ local function CreateBuildFromWizard()
 end
 
 ------------------------------------------------------------------------
--- Step 0: Mode Selection (landing page)
-------------------------------------------------------------------------
-
-local function RenderStep0()
-    ClearContent()
-    local y = -20
-
-    local title = contentArea:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    title:SetPoint("TOP", contentArea, "TOP", 0, y)
-    title:SetText("How would you like to create your build?")
-
-    y = y - 20
-    local subtitle = contentArea:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    subtitle:SetPoint("TOP", contentArea, "TOP", 0, y)
-    subtitle:SetText("Choose the mode that fits your style.")
-
-    -- Wizard button
-    local wizardBtn = CreateFrame("Button", nil, contentArea, "UIPanelButtonTemplate")
-    wizardBtn:SetWidth(200)
-    wizardBtn:SetHeight(40)
-    wizardBtn:SetPoint("TOP", contentArea, "TOP", 0, y - 30)
-    wizardBtn:SetText("Wizard Mode")
-    wizardBtn:SetScript("OnClick", function()
-        state.step = 1
-        RenderCurrentStep()
-    end)
-
-    local wizardDesc = contentArea:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    wizardDesc:SetPoint("TOP", wizardBtn, "BOTTOM", 0, -2)
-    wizardDesc:SetText("Learn how the addon works with a guided setup. Takes you to the editor at the end.")
-
-    -- Pro button (anchored below wizard description, not at absolute y)
-    local proBtn = CreateFrame("Button", nil, contentArea, "UIPanelButtonTemplate")
-    proBtn:SetWidth(200)
-    proBtn:SetHeight(40)
-    proBtn:SetPoint("TOP", wizardDesc, "BOTTOM", 0, -18)
-    proBtn:SetText("Pro Mode")
-    proBtn:SetScript("OnClick", function()
-        EbonBuilds.ViewRouter.Show("buildOverview", { mode = "create" })
-    end)
-
-    local proDesc = contentArea:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    proDesc:SetPoint("TOP", proBtn, "BOTTOM", 0, -2)
-    proDesc:SetText("Go straight to the editor with full manual control over all settings.")
-end
-
-------------------------------------------------------------------------
 -- Navigation
 ------------------------------------------------------------------------
 
@@ -836,8 +789,7 @@ end
 
 local function GoBack()
     if state.step <= 1 then
-        state.step = 0
-        RenderCurrentStep()
+        EbonBuilds.ViewRouter.ShowActiveOrWelcome()
         return
     end
 
@@ -853,13 +805,6 @@ end
 
 local function RenderCurrentStep()
     ClearContent()
-    if state.step == 0 then
-        stepLabel:SetText("")
-        backBtn:Hide()
-        nextBtn:Hide()
-        RenderStep0()
-        return
-    end
     backBtn:Show()
     nextBtn:Show()
     UpdateNavButtons()
@@ -890,7 +835,7 @@ function view.Show(container, context)
     viewFrame:SetAllPoints(container)
 
     -- Reset state
-    state.step = 0
+    state.step = 1
     state.locked = { nil, nil, nil, nil, nil }
     state.noveltyValue = 30
     state.qualityBonus = { [0] = 0, [1] = 10, [2] = 20, [3] = 30, [4] = 40 }
