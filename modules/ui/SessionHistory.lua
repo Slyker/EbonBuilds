@@ -833,15 +833,15 @@ local function BuildExportDialog()
     f:SetScript("OnHide", function(self) self:StopMovingOrSizing() end)
     f:Hide()
 
-    -- Title
-    EbonBuilds.UIHelpers.CreateTitleBar(f, "Session Export")
+    -- Title bar (drag frame used as anchor below)
+    local _, titleBar = EbonBuilds.UIHelpers.CreateTitleBar(f, "Session Export")
 
     -- Close button
     EbonBuilds.UIHelpers.CreateCloseButton(f)
 
     -- ScrollFrame wrapping an EditBox
     local scroll = CreateFrame("ScrollFrame", nil, f)
-    scroll:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -2, -8)
+    scroll:SetPoint("TOPLEFT", titleBar, "BOTTOMLEFT", 0, -4)
     scroll:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -20, 10)
 
     local editBox = CreateFrame("EditBox", nil, scroll)
@@ -1016,11 +1016,14 @@ local function BuildUI(container)
 
     local actionFilterDD = CreateFrame("Frame", "EbonBuildsLogActionFilterDD", filterBar, "UIDropDownMenuTemplate")
     actionFilterDD:SetPoint("LEFT", filterBar, "LEFT", -8, -2)
+    UIDropDownMenu_SetWidth(actionFilterDD, 100)
+    UIDropDownMenu_SetText(actionFilterDD, "All Actions")
     UIDropDownMenu_Initialize(actionFilterDD, function()
         local actions = { "All", "Banish", "Reroll", "Freeze", "Select" }
         for _, action in ipairs(actions) do
             local info = UIDropDownMenu_CreateInfo()
             info.text = action
+            info.checked = (action == "All" and logActionFilter == nil) or (logActionFilter == action)
             info.func = function()
                 if action == "All" then
                     logActionFilter = nil
@@ -1029,18 +1032,17 @@ local function BuildUI(container)
                     logActionFilter = action
                     UIDropDownMenu_SetText(actionFilterDD, action)
                 end
+                UIDropDownMenu_Initialize(actionFilterDD, actionFilterDD.initialize)
                 EbonBuilds.SessionHistory.RefreshLogView()
             end
             UIDropDownMenu_AddButton(info)
         end
     end)
-    UIDropDownMenu_SetWidth(actionFilterDD, 100)
-    UIDropDownMenu_SetText(actionFilterDD, "All Actions")
 
     local logSearchEdit, logSearchContainer = EbonBuilds.UIHelpers.CreateSearchBox(filterBar, 140, 22, function(text)
         logSearchText = text
         EbonBuilds.SessionHistory.RefreshLogView()
-    end)
+    end, "Search...")
     logSearchContainer:SetPoint("LEFT", actionFilterDD, "RIGHT", 80, 0)
 
     local logHeader = bottomPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
