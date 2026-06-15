@@ -194,7 +194,7 @@ function EbonBuilds.Session.GetSessionsForBuild(buildId)
     if not buildId then return EbonBuildsDB.sessions or {} end
     local out = {}
     for _, s in ipairs(EbonBuildsDB.sessions or {}) do
-        if s.buildId == buildId then
+        if s.buildId == buildId or not s.buildId then
             out[#out + 1] = s
         end
     end
