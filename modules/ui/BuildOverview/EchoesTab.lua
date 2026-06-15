@@ -131,8 +131,10 @@ local function RefreshEchoes()
     elseif BO.echoesSortMode == 5 then
         local settings = EbonBuilds.Scoring.GetEffectiveSettings()
         table.sort(filtered, function(a, b)
-            local sa = EbonBuilds.Scoring.Score(a, EbonBuilds.Weights.Get(a.name), settings)
-            local sb = EbonBuilds.Scoring.Score(b, EbonBuilds.Weights.Get(b.name), settings)
+            local aBanned = EbonBuilds.Scoring.IsBannedByName(a.name)
+            local bBanned = EbonBuilds.Scoring.IsBannedByName(b.name)
+            local sa = aBanned and -math.huge or EbonBuilds.Scoring.Score(a, EbonBuilds.Weights.Get(a.name), settings)
+            local sb = bBanned and -math.huge or EbonBuilds.Scoring.Score(b, EbonBuilds.Weights.Get(b.name), settings)
             if sa ~= sb then return sa > sb end
             if a.quality ~= b.quality then return a.quality > b.quality end
             return a.name < b.name
@@ -260,15 +262,14 @@ local function RefreshEchoes()
         btn._nameText:SetTextColor(qc[1], qc[2], qc[3])
 
         local banned = EbonBuilds.Scoring and EbonBuilds.Scoring.IsBannedByName and EbonBuilds.Scoring.IsBannedByName(entry.name)
-        local settings = EbonBuilds.Scoring.GetEffectiveSettings()
-        local weight = EbonBuilds.Weights.Get(entry.name)
-        local score = EbonBuilds.Scoring.Score(entry, weight, settings)
-        if banned then score = math.floor(score * 0.1) end
-        btn._scoreText:SetText(tostring(math.floor(score)))
         if banned then
-            btn._scoreText:SetTextColor(1, 0.3, 0.3, 1)
+            btn._scoreText:Hide()
         else
-            btn._scoreText:SetTextColor(1, 0.82, 0, 1)
+            local settings = EbonBuilds.Scoring.GetEffectiveSettings()
+            local weight = EbonBuilds.Weights.Get(entry.name)
+            local score = EbonBuilds.Scoring.Score(entry, weight, settings)
+            btn._scoreText:SetText(tostring(math.floor(score)))
+            btn._scoreText:Show()
         end
 
         if banned then
