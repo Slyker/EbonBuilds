@@ -122,8 +122,10 @@ local function RefreshEchoes()
     elseif BO.echoesSortMode == 4 then
         local timestamps = EchoesData.ComputeLastPickedTimestamps()
         table.sort(filtered, function(a, b)
-            local ta = timestamps[a.name] or 0
-            local tb = timestamps[b.name] or 0
+            local ka = a.name .. ":" .. (a.quality or 0)
+            local kb = b.name .. ":" .. (b.quality or 0)
+            local ta = timestamps[ka] or 0
+            local tb = timestamps[kb] or 0
             if ta ~= tb then return ta > tb end
             if a.quality ~= b.quality then return a.quality > b.quality end
             return a.name < b.name

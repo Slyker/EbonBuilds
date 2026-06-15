@@ -194,8 +194,11 @@ local function ComputeLastPickedTimestamps()
                     local action = entry.action or ""
                     if action == "Select" or action == "Select (Locked)" then
                         local target = entry.choices[entry.targetIndex]
-                        if target and target.name and not timestamps[target.name] then
-                            timestamps[target.name] = entry.timestamp
+                        if target and target.name then
+                            local key = target.name .. ":" .. (target.quality or 0)
+                            if not timestamps[key] then
+                                timestamps[key] = entry.timestamp
+                            end
                         end
                     end
                 end
