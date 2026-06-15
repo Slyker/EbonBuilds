@@ -34,15 +34,21 @@ local state = {
     isPublic  = false,
 }
 function EbonBuilds.BuildForm.GetEditingClass()
-    return state.class
+    if state.class then return state.class end
+    local build = EbonBuilds.Build.GetCurrent()
+    return build and build.class
 end
 function EbonBuilds.BuildForm.GetEditingSettings()
+    local build = nil
     if state.id then
-        local build = EbonBuilds.Build.Get(state.id)
-        if build then
-            build.settings = build.settings or EbonBuilds.Build.DefaultSettings()
-            return build.settings
-        end
+        build = EbonBuilds.Build.Get(state.id)
+    end
+    if not build then
+        build = EbonBuilds.Build.GetCurrent()
+    end
+    if build then
+        build.settings = build.settings or EbonBuilds.Build.DefaultSettings()
+        return build.settings
     end
     if not state.settings then
         state.settings = EbonBuilds.Build.DefaultSettings()
@@ -51,8 +57,10 @@ function EbonBuilds.BuildForm.GetEditingSettings()
 end
 
 function EbonBuilds.BuildForm.GetEditingLockedEchoes()
-    if not state.mode then return nil end
-    return state.locked
+    if state.mode then return state.locked end
+    local build = EbonBuilds.Build.GetCurrent()
+    if build and build.lockedEchoes then return build.lockedEchoes end
+    return nil
 end
 
 local classButtons = {}
