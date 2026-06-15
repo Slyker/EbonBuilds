@@ -383,7 +383,8 @@ end
 local function OnSave()
     CollectFromInputs()
     if state.title == "" then return end
-    local weights = EbonBuildsDB.pendingWeights
+    local build = state.id and EbonBuilds.Build.Get(state.id)
+    local weights = build and build.echoWeights or {}
     if state.mode == "create" then
         local b = EbonBuilds.Build.Create({
             title = state.title, class = state.class, spec = state.spec,
@@ -403,8 +404,6 @@ local function OnSave()
             echoWeights = weights,
         })
     end
-    EbonBuildsDB._isEditingBuild = nil
-    EbonBuildsDB.pendingWeights = nil
     EbonBuildsDB._wizardPrefill = nil
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
         EbonBuilds.BuildList.Refresh()
@@ -415,8 +414,6 @@ end
 local LoadFromBuild, ApplyStateToInputs
 
 local function OnCancel()
-    EbonBuildsDB._isEditingBuild = nil
-    EbonBuildsDB.pendingWeights = nil
     EbonBuildsDB._wizardPrefill = nil
 
     -- Revert state and inputs to original build so dirty edits don't survive Cancel
@@ -433,8 +430,6 @@ end
 
 local function OnDelete()
     if not state.id then return end
-    EbonBuildsDB._isEditingBuild = nil
-    EbonBuildsDB.pendingWeights = nil
     EbonBuildsDB._wizardPrefill = nil
     EbonBuilds.Build.Delete(state.id)
     if EbonBuilds.BuildList and EbonBuilds.BuildList.Refresh then
@@ -500,13 +495,6 @@ LoadFromBuild = function(build)
     state.settings = CloneSettings(build.settings)
     state.isPublic = build.isPublic or false
     for i = 1, 5 do state.locked[i] = build.lockedEchoes and build.lockedEchoes[i] or nil end
-    EbonBuildsDB._isEditingBuild = true
-    EbonBuildsDB.pendingWeights = {}
-    if build.echoWeights then
-        for name, weight in pairs(build.echoWeights) do
-            EbonBuildsDB.pendingWeights[name] = weight
-        end
-    end
 end
 
 local function LoadDefaults()
@@ -519,8 +507,6 @@ local function LoadDefaults()
     state.settings = EbonBuilds.Build.DefaultSettings()
     state.isPublic = false
     for i = 1, 5 do state.locked[i] = nil end
-    EbonBuildsDB._isEditingBuild = true
-    EbonBuildsDB.pendingWeights = {}
     EbonBuildsDB._wizardPrefill = nil
 end
 
@@ -535,8 +521,6 @@ local function LoadFromWizardPrefill()
     state.settings = pre.settings or EbonBuilds.Build.DefaultSettings()
     state.isPublic = pre.isPublic or false
     for i = 1, 5 do state.locked[i] = (pre.lockedEchoes and pre.lockedEchoes[i]) or nil end
-    EbonBuildsDB._isEditingBuild = true
-    EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
 end
 
 ------------------------------------------------------------------------

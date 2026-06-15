@@ -345,32 +345,23 @@ function EbonBuilds.Build.GetCurrentId()
 end
 
 -- Returns weights from the build currently being viewed/edited.
+-- Always returns the build's own echoWeights table so each profile is independent.
 function EbonBuilds.Build.GetCurrentWeights()
-    if EbonBuildsDB._isEditingBuild then
-        EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
-        return EbonBuildsDB.pendingWeights
-    end
     local build = EbonBuilds.Build.GetCurrent()
     if build then
         build.echoWeights = build.echoWeights or {}
         return build.echoWeights
     end
-    EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
-    return EbonBuildsDB.pendingWeights
+    return {}
 end
 
 function EbonBuilds.Build.GetActiveWeights()
-    if EbonBuildsDB._isEditingBuild then
-        EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
-        return EbonBuildsDB.pendingWeights
-    end
     local build = EbonBuilds.Build.GetActive()
     if build then
         build.echoWeights = build.echoWeights or {}
         return build.echoWeights
     end
-    EbonBuildsDB.pendingWeights = EbonBuildsDB.pendingWeights or {}
-    return EbonBuildsDB.pendingWeights
+    return {}
 end
 
 function EbonBuilds.Build.NewObject(data)
@@ -400,8 +391,6 @@ end
 
 function EbonBuilds.Build.Create(data)
     local build = EbonBuilds.Build.NewObject(data)
-    build.echoWeights = EbonBuildsDB.pendingWeights or build.echoWeights
-    EbonBuildsDB.pendingWeights = nil
     EbonBuildsDB.builds[build.id] = build
     return build
 end

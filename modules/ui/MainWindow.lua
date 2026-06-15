@@ -158,6 +158,51 @@ local function CreateSettingsButton(frame, popup, closeBtn)
     end)
 end
 
+local function CreateAutomationButton(frame, closeBtn)
+    local btn = CreateFrame("Button", nil, frame)
+    btn:SetSize(20, 20)
+    btn:SetPoint("RIGHT", closeBtn, "LEFT", -24, 0)
+    btn:SetFrameLevel(100)
+    btn:EnableMouse(true)
+
+    local icon = btn:CreateTexture(nil, "OVERLAY")
+    icon:SetAllPoints(btn)
+    btn._icon = icon
+
+    local function Refresh()
+        local gs = EbonBuildsDB.globalSettings
+        local on = gs and gs.automationEnabled ~= false
+        if on then
+            icon:SetTexture("Interface\\Icons\\Ability_Warrior_Innerrage")
+            icon:SetVertexColor(0.3, 1.0, 0.3, 1)
+        else
+            icon:SetTexture("Interface\\Icons\\Ability_Warrior_Innerrage")
+            icon:SetVertexColor(1.0, 0.3, 0.3, 1)
+        end
+    end
+
+    btn:SetScript("OnClick", function()
+        local gs = EbonBuildsDB.globalSettings
+        gs.automationEnabled = (gs.automationEnabled == false) and true or false
+        Refresh()
+    end)
+
+    EbonBuilds.UIHelpers.WireTooltip(btn, function(self)
+        local gs = EbonBuildsDB.globalSettings
+        local on = gs and gs.automationEnabled ~= false
+        if on then
+            GameTooltip:AddLine("Automation: ON", 0.3, 1.0, 0.3)
+            GameTooltip:AddLine("Click to disable automation", 0.8, 0.8, 0.8)
+        else
+            GameTooltip:AddLine("Automation: OFF", 1.0, 0.3, 0.3)
+            GameTooltip:AddLine("Click to enable automation", 0.8, 0.8, 0.8)
+        end
+    end)
+
+    Refresh()
+    return btn
+end
+
 local function CreateLeftColumn(frame)
     local col = CreateFrame("Frame", nil, frame)
     col:SetPoint("TOPLEFT",    frame, "TOPLEFT",    14, -34)
@@ -188,6 +233,7 @@ local function BuildFrame()
 
     local settingsPopup = BuildSettingsPopup()
     CreateSettingsButton(frame, settingsPopup, closeBtn)
+    CreateAutomationButton(frame, closeBtn)
     frame._settingsPopup = settingsPopup
 
     frame:Hide()

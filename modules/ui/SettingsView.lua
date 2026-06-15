@@ -42,7 +42,7 @@ local peakLabel
 local whitelistToggles = {}
 local whitelistWarningLabel
 
-local CONTENT_HEIGHT = 1160
+local CONTENT_HEIGHT = 1100
 
 -- Quality / family weight editor widgets
 local qualityBoxes = {}
@@ -293,48 +293,6 @@ end
 local CreateNumberEditBox = EbonBuilds.UIHelpers.CreateNumberEditBox
 
 ------------------------------------------------------------------------
--- Global automation toggle
-------------------------------------------------------------------------
-
-local globalAutoToggle
-
-local function BuildGlobalAutomationSection(parent, x, y)
-    local header = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    header:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
-    header:SetText("Automation:")
-
-    local hint = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    hint:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -2)
-    hint:SetText("Master switch for all echo picking automation.")
-
-    globalAutoToggle = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-    globalAutoToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", x + 10, y - 34)
-    globalAutoToggle:SetSize(24, 24)
-
-    local toggleLabel = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    toggleLabel:SetPoint("LEFT", globalAutoToggle, "RIGHT", 6, 0)
-    toggleLabel:SetText("Enable automation")
-    toggleLabel:SetTextColor(0.8, 0.8, 0.8)
-
-    globalAutoToggle:SetScript("OnClick", function(self)
-        local gs = EbonBuildsDB.globalSettings
-        gs.automationEnabled = self:GetChecked()
-    end)
-
-    local note = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    note:SetPoint("TOPLEFT", parent, "TOPLEFT", x + 10, y - 60)
-    note:SetWidth(480)
-    note:SetJustifyH("LEFT")
-    note:SetText("When disabled, the addon will not automatically banish, reroll, freeze, or pick echoes.")
-end
-
-local function RefreshGlobalAutomationToggle()
-    if not globalAutoToggle then return end
-    local gs = EbonBuildsDB.globalSettings
-    globalAutoToggle:SetChecked(gs.automationEnabled ~= false)
-end
-
-------------------------------------------------------------------------
 -- Quality bonus section
 ------------------------------------------------------------------------
 
@@ -542,7 +500,6 @@ end
 ------------------------------------------------------------------------
 
 local function RefreshInputs()
-    RefreshGlobalAutomationToggle()
     local settings = EbonBuilds.BuildForm.GetEditingSettings()
     for _, entry in ipairs(THRESHOLDS) do
         local slider = thresholdSliders[entry.key]
@@ -618,13 +575,12 @@ local function BuildViewFrame(parent)
 
     scrollFrame:SetScript("OnSizeChanged", UpdateScrollRange)
 
-    BuildGlobalAutomationSection  (scrollChild, 10,  -5)
-    BuildQualityBonusSection     (scrollChild, 10, -75)
-    BuildFamilyBonusSection      (scrollChild, 10, -165)
-    BuildNoveltyBonusSection     (scrollChild, 10, -305)
-    BuildBanishWhitelistSection  (scrollChild, 10, -370)
-    BuildPeakRow                 (scrollChild, 10, -515)
-    BuildThresholdsSection       (scrollChild, 10, -565)
+    BuildQualityBonusSection     (scrollChild, 10,  -5)
+    BuildFamilyBonusSection      (scrollChild, 10, -95)
+    BuildNoveltyBonusSection     (scrollChild, 10, -235)
+    BuildBanishWhitelistSection  (scrollChild, 10, -300)
+    BuildPeakRow                 (scrollChild, 10, -445)
+    BuildThresholdsSection       (scrollChild, 10, -495)
 
     return f
 end
