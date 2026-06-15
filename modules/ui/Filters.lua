@@ -5,16 +5,31 @@ EbonBuilds.Filters = {}
 
 local FAMILIES = { "Tank", "Survivability", "Healer", "Caster DPS", "Melee DPS", "Ranged DPS", "No family" }
 
+local function GetUIState()
+    return (EbonBuildsDB and EbonBuildsDB.globalSettings and EbonBuildsDB.globalSettings.uiState) or {}
+end
+
+local function SaveFiltersUI()
+    if not EbonBuildsDB or not EbonBuildsDB.globalSettings then return end
+    local ui = EbonBuildsDB.globalSettings.uiState
+    if not ui then return end
+    ui.filtersSearch   = state.text
+    ui.filtersQuality  = state.quality
+    ui.filtersFamilies = state.families
+    ui.filtersShowAllClasses = state.showAllClasses
+end
+
 local state = {
-    text     = "",
-    quality  = nil,
-    families = {},
-    showAllClasses = false,
+    text            = "",
+    quality         = nil,
+    families        = {},
+    showAllClasses  = false,
 }
 local changeCallbacks = {}
 local searchEditBox = nil
 
 local function Notify()
+    SaveFiltersUI()
     for i = 1, #changeCallbacks do
         changeCallbacks[i]()
     end
@@ -84,9 +99,12 @@ local function CreateSearchBox(bar)
     local edit, container = EbonBuilds.UIHelpers.CreateSearchBox(bar, 140, 22, function(text)
         state.text = text
         Notify()
-    end)
+    end, "Search...")
     container:SetPoint("LEFT", bar, "LEFT", 0, 0)
     searchEditBox = edit
+    if state.text and state.text ~= "" then
+        edit:SetText(state.text)
+    end
     return container
 end
 
@@ -103,16 +121,23 @@ local function CreateQualityDropdown(bar, leftAnchor)
     dropdown:SetPoint("LEFT", leftAnchor, "RIGHT", 0, -2)
 
     UIDropDownMenu_SetWidth(dropdown, 90)
-    UIDropDownMenu_SetText(dropdown, "All")
-
     local items = { "All", "Common", "Uncommon", "Rare", "Epic", "Legendary" }
+    if state.quality then
+        UIDropDownMenu_SetText(dropdown, items[state.quality + 2] or "All")
+    else
+        UIDropDownMenu_SetText(dropdown, "All")
+    end
+
     UIDropDownMenu_Initialize(dropdown, function()
         for index, name in ipairs(items) do
             local info = UIDropDownMenu_CreateInfo()
             info.text = name
+            local selectedQuality = (index == 1) and nil or (index - 2)
+            info.checked = (state.quality == selectedQuality)
             info.func = function()
                 if index == 1 then state.quality = nil else state.quality = index - 2 end
                 UIDropDownMenu_SetText(dropdown, name)
+                UIDropDownMenu_Initialize(dropdown, dropdown.initialize)
                 Notify()
             end
             UIDropDownMenu_AddButton(info)
@@ -165,6 +190,12 @@ end
 ------------------------------------------------------------------------
 
 function EbonBuilds.Filters.Init(parent)
+    local ui = GetUIState()
+    state.text            = ui.filtersSearch or ""
+    state.quality         = ui.filtersQuality
+    state.families        = ui.filtersFamilies or {}
+    state.showAllClasses  = ui.filtersShowAllClasses or false
+
     local bar = CreateFrame("Frame", nil, parent)
     bar:SetPoint("TOPLEFT",  parent, "TOPLEFT",   10, -34)
     bar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -10, -34)
@@ -179,6 +210,7 @@ function EbonBuilds.Filters.Init(parent)
         Notify()
     end)
     cb:SetPoint("LEFT", familyDropdown, "RIGHT", 2, 0)
+    if state.showAllClasses then cb:SetChecked(true) end
 
     return bar
 end

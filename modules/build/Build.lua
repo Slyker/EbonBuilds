@@ -90,25 +90,11 @@ function EbonBuilds.Build.Checksum(build)
 end
 
 local function DefaultStats()
-    return {
-        echoesSeen    = 0,
-        runsCompleted = 0,
-        runsReset     = 0,
-        picks         = 0,
-        rerollsUsed   = 0,
-        banishesUsed  = 0,
-        freezesUsed   = 0,
-        qualityPicks  = { 0, 0, 0, 0, 0 },
-        mostPicked    = {},
-        mostBanned    = {},
-    }
+    return nil
 end
 
 local function EnsureStats(build)
-    build.stats = build.stats or DefaultStats()
-    build.stats.qualityPicks = build.stats.qualityPicks or { 0, 0, 0, 0, 0 }
-    build.stats.mostPicked   = build.stats.mostPicked   or {}
-    build.stats.mostBanned   = build.stats.mostBanned   or {}
+    build.stats = nil
     if build.automationEnabled == nil then build.automationEnabled = true end
     if not build.author then build.author = "Unknown" end
     if not build.lastModified then build.lastModified = date("%Y-%m-%d %H:%M:%S") end

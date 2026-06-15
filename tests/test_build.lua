@@ -97,7 +97,7 @@ function TestBuild.testNewObjectDefaults()
     assertNotNil(build.id)
     assertEquals(#build.id, 24)
     assertNotNil(build.settings)
-    assertNotNil(build.stats)
+    assertNil(build.stats)
     assertEquals(build.automationEnabled, true)
     assertEquals(build.version, 1)
 end

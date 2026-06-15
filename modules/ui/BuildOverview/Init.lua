@@ -17,9 +17,9 @@ BO.overviewDescEdit = nil
 BO.contentArea = nil
 BO.settingsParent = nil
 
-BO.statsValueLabels = nil
-BO.statsQualityLabels = nil
 BO.statsParent = nil
+BO.statsAllLabels = nil
+BO.statsSessionLabels = nil
 
 BO.missingScroll = nil
 BO.missingChild = nil
@@ -34,11 +34,19 @@ BO.echoesChild = nil
 BO.echoesBar = nil
 BO.echoesRows = {}
 BO.echoesSearchText = ""
-BO.echoesQualityFilter = -1
+BO.echoesQualityFilter = nil
 BO.echoesSortMode = 1
-BO.echoesShowAll = false
+BO.echoesShowMode = "owned"
 BO.echoesParent = nil
 BO.echoesRefreshTimer = nil
+
+local function LoadEchoesUIState()
+    local ui = (EbonBuildsDB and EbonBuildsDB.globalSettings and EbonBuildsDB.globalSettings.uiState) or {}
+    BO.echoesSearchText    = ui.echoesSearch  or ""
+    BO.echoesQualityFilter = ui.echoesQuality and (type(ui.echoesQuality) == "table" and ui.echoesQuality or nil) or nil
+    BO.echoesSortMode      = ui.echoesSortMode or 1
+    BO.echoesShowMode      = ui.echoesShowMode or "owned"
+end
 
 ------------------------------------------------------------------------
 -- MarkDirty: mark build as modified, refresh build list
@@ -160,7 +168,7 @@ local function BuildViewFrame()
     BO.statsParent = CreateFrame("Frame", nil, BO.contentArea)
     BO.statsParent:SetAllPoints(BO.contentArea)
     BO.statsParent:Hide()
-    BO.statsValueLabels, BO.statsQualityLabels = BO.BuildStatsTab(BO.statsParent)
+    BO.BuildStatsTab(BO.statsParent)
 
     BO.missingParent = CreateFrame("Frame", nil, BO.contentArea)
     BO.missingParent:SetAllPoints(BO.contentArea)
@@ -267,6 +275,7 @@ end
 ------------------------------------------------------------------------
 
 function BO.Init()
+    LoadEchoesUIState()
     BO.viewFrame = BuildViewFrame()
     BO.viewFrame:Hide()
     EbonBuilds.ViewRouter.Register("buildOverview", view)

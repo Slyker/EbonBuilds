@@ -51,19 +51,18 @@ function EbonBuilds.UIHelpers.CreateIconPicker(opts)
     picker:SetScript("OnHide", function() catcher:Hide() end)
 
     -- Search box
-    local searchBox = CreateFrame("EditBox", nil, picker, "InputBoxTemplate")
-    searchBox:SetPoint("TOPLEFT",  picker, "TOPLEFT",  6, -6)
-    searchBox:SetPoint("TOPRIGHT", picker, "TOPRIGHT", -24, -6)
-    searchBox:SetHeight(20)
-    searchBox:SetAutoFocus(false)
-    searchBox:SetScript("OnEscapePressed", function(self)
+    local searchEdit, searchContainer = EbonBuilds.UIHelpers.CreateSearchBox(picker, nil, 22, nil, "Search icons...")
+    searchContainer:SetPoint("TOPLEFT",  picker, "TOPLEFT",  6, -6)
+    searchContainer:SetPoint("TOPRIGHT", picker, "TOPRIGHT", -6, -6)
+
+    searchEdit:SetScript("OnEscapePressed", function(self)
         self:ClearFocus()
         picker:Hide()
     end)
 
     -- Scroll frame (viewport)
     local scrollFrame = CreateFrame("ScrollFrame", nil, picker)
-    scrollFrame:SetPoint("TOPLEFT",     searchBox, "BOTTOMLEFT", 0, -4)
+    scrollFrame:SetPoint("TOPLEFT",     searchContainer, "BOTTOMLEFT", 0, -4)
     scrollFrame:SetPoint("BOTTOMRIGHT", picker,    "BOTTOMRIGHT", -6, 6)
     scrollFrame:EnableMouseWheel(true)
 
@@ -161,13 +160,13 @@ function EbonBuilds.UIHelpers.CreateIconPicker(opts)
         RepositionVisible()
     end
 
-    searchBox:SetScript("OnTextChanged", function(self)
+    searchEdit:SetScript("OnTextChanged", function(self)
         ApplyFilter(self:GetText())
     end)
 
     picker:SetScript("OnShow", function()
-        searchBox:SetText("")
-        searchBox:ClearFocus()
+        searchEdit:SetText("")
+        searchEdit:ClearFocus()
         filteredIndices = nil
         topIdx = 1
         UpdateScrollRange()
@@ -180,7 +179,7 @@ function EbonBuilds.UIHelpers.CreateIconPicker(opts)
     return {
         frame       = picker,
         catcher     = catcher,
-        searchBox   = searchBox,
+        searchBox   = searchEdit,
         scrollFrame = scrollFrame,
         scrollBar   = scrollBar,
         pool        = pool,

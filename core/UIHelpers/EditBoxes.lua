@@ -40,12 +40,42 @@ function EbonBuilds.UIHelpers.CreateEditBox(parent, width, height, opts)
         if opts.onFocusLost then opts.onFocusLost(self) end
     end)
 
+    if opts.placeholder then
+        local placeholder = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        placeholder:SetPoint("LEFT", c, "LEFT", 8, 0)
+        placeholder:SetText(opts.placeholder)
+        placeholder:SetTextColor(0.5, 0.5, 0.5, 0.7)
+        placeholder:SetFont("Fonts\\FRIZQT__.TTF", opts.fontSize or 12, "")
+        placeholder:SetJustifyH(opts.justifyH or "LEFT")
+
+        local function UpdatePlaceholder()
+            if box:GetText() == "" then
+                placeholder:Show()
+            else
+                placeholder:Hide()
+            end
+        end
+        box:SetScript("OnTextChanged", function(self)
+            UpdatePlaceholder()
+            if opts.onTextChanged then opts.onTextChanged(self) end
+        end)
+        box:SetScript("OnEditFocusGained", function(self)
+            UpdatePlaceholder()
+            if opts.onFocusGained then opts.onFocusGained(self) end
+        end)
+        box:SetScript("OnEditFocusLost", function(self)
+            UpdatePlaceholder()
+            if opts.onFocusLost then opts.onFocusLost(self) end
+        end)
+        UpdatePlaceholder()
+    end
+
     return box, c
 end
 
 -- Search box --------------------------------------------------------------
 
-function EbonBuilds.UIHelpers.CreateSearchBox(parent, width, height, onChange)
+function EbonBuilds.UIHelpers.CreateSearchBox(parent, width, height, onChange, placeholder)
     height = height or 22
     width = width or 140
 
@@ -56,17 +86,60 @@ function EbonBuilds.UIHelpers.CreateSearchBox(parent, width, height, onChange)
     c:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 
     local edit = CreateFrame("EditBox", nil, c)
-    edit:SetSize(width - 6, height - 4)
-    edit:SetPoint("CENTER", c, "CENTER", 0, 0)
+    edit:SetHeight(height - 4)
+    edit:SetPoint("LEFT",  c, "LEFT",   6, 0)
+    edit:SetPoint("RIGHT", c, "RIGHT", -20, 0)
     edit:SetFont("Fonts\\FRIZQT__.TTF", 11, "")
     edit:SetTextColor(1, 1, 1, 1)
     edit:SetAutoFocus(false)
     edit:SetMaxLetters(60)
 
-    if onChange then
-        edit:SetScript("OnTextChanged", function(self) onChange(self:GetText():lower()) end)
+    local clearBtn = CreateFrame("Button", nil, c)
+    clearBtn:SetSize(16, 16)
+    clearBtn:SetPoint("RIGHT", c, "RIGHT", -3, 0)
+    clearBtn:SetNormalTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+    clearBtn:SetHighlightTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Highlight")
+    clearBtn:SetPushedTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Down")
+    clearBtn:Hide()
+
+    clearBtn:SetScript("OnClick", function()
+        edit:SetText("")
+        edit:SetFocus()
+    end)
+
+    local phText = nil
+    if placeholder then
+        phText = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        phText:SetPoint("LEFT", c, "LEFT", 8, 0)
+        phText:SetText(placeholder)
+        phText:SetTextColor(0.5, 0.5, 0.5, 0.7)
+        phText:SetFont("Fonts\\FRIZQT__.TTF", 11, "")
     end
+
+    local function UpdateState()
+        local text = edit:GetText()
+        if text == "" then
+            clearBtn:Hide()
+            if phText then phText:Show() end
+        else
+            clearBtn:Show()
+            if phText then phText:Hide() end
+        end
+    end
+
+    edit:SetScript("OnTextChanged", function(self)
+        UpdateState()
+        if onChange then onChange(self:GetText():lower()) end
+    end)
     edit:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    edit:SetScript("OnEditFocusGained", function(self)
+        if phText then phText:Hide() end
+    end)
+    edit:SetScript("OnEditFocusLost", function(self)
+        UpdateState()
+    end)
+
+    UpdateState()
 
     return edit, c
 end

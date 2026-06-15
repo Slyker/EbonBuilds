@@ -186,6 +186,64 @@ function EbonBuilds.Session.LogAction(scored, action, targetIndex)
     session.logs[#session.logs + 1] = entry
 end
 
+------------------------------------------------------------------------
+-- ComputeStats: derive stats from session logbook entries
+------------------------------------------------------------------------
+
+function EbonBuilds.Session.ComputeStats(sessions)
+    local stats = {
+        echoesSeen    = 0,
+        runsCompleted = #sessions,
+        picks         = 0,
+        rerollsUsed   = 0,
+        banishesUsed  = 0,
+        freezesUsed   = 0,
+        qualityPicks  = { 0, 0, 0, 0, 0 },
+        mostPicked    = {},
+        mostBanned    = {},
+    }
+
+    for _, session in ipairs(sessions) do
+        local logs = session.logs
+        if logs then
+            for _, entry in ipairs(logs) do
+                stats.echoesSeen = stats.echoesSeen + 1
+
+                local action = entry.action
+                if action == "Select" or action == "Select (Locked)" then
+                    stats.picks = stats.picks + 1
+                    if entry.targetIndex and entry.choices then
+                        local target = entry.choices[entry.targetIndex]
+                        if target then
+                            local q = target.quality or 0
+                            if q >= 0 and q <= 4 then
+                                stats.qualityPicks[q + 1] = (stats.qualityPicks[q + 1] or 0) + 1
+                            end
+                            if target.name then
+                                stats.mostPicked[target.name] = (stats.mostPicked[target.name] or 0) + 1
+                            end
+                        end
+                    end
+                elseif action == "Reroll" then
+                    stats.rerollsUsed = stats.rerollsUsed + 1
+                elseif action == "Banish" then
+                    stats.banishesUsed = stats.banishesUsed + 1
+                    if entry.targetIndex and entry.choices then
+                        local target = entry.choices[entry.targetIndex]
+                        if target and target.name then
+                            stats.mostBanned[target.name] = (stats.mostBanned[target.name] or 0) + 1
+                        end
+                    end
+                elseif action == "Freeze" then
+                    stats.freezesUsed = stats.freezesUsed + 1
+                end
+            end
+        end
+    end
+
+    return stats
+end
+
 function EbonBuilds.Session.GetSessions()
     return EbonBuildsDB.sessions or {}
 end

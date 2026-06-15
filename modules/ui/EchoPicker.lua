@@ -111,7 +111,7 @@ local function CreateSearchBox(parent)
         searchText = text
         ApplySearch()
         Render()
-    end)
+    end, "Search echoes...")
     container:SetPoint("TOP", parent, "TOP", 0, -36)
     return box
 end

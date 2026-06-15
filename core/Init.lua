@@ -29,6 +29,19 @@ local function OnAddonLoaded(addonName)
         EbonBuildsDB.globalSettings.automationEnabled = true
     end
 
+    EbonBuildsDB.globalSettings.uiState = EbonBuildsDB.globalSettings.uiState or {
+        windowOpen      = false,
+        leftPanelOpen   = true,
+        echoesQuality   = nil,
+        echoesSortMode  = 1,
+        echoesShowMode  = "owned",
+        echoesSearch    = "",
+        filtersSearch   = "",
+        filtersQuality  = nil,
+        filtersFamilies = {},
+        filtersShowAllClasses = false,
+    }
+
     EbonBuildsCharDB = EbonBuildsCharDB or {
         activeBuildId = nil,
     }
@@ -44,6 +57,30 @@ local function OnAddonLoaded(addonName)
     EbonBuilds.MainWindow.Init()
     EbonBuilds.Automation.Init()
     EbonBuilds.Sync.Init()
+
+    -- Dropdown close-on-outside-click: transparent catcher at the lowest
+    -- frame level within FULLSCREEN_DIALOG so it intercepts clicks on
+    -- everything below the open dropdown list but not the list itself.
+    local dropCatcher = CreateFrame("Frame", nil, UIParent)
+    dropCatcher:SetAllPoints(UIParent)
+    dropCatcher:EnableMouse(true)
+    dropCatcher:SetFrameStrata("FULLSCREEN_DIALOG")
+    dropCatcher:SetFrameLevel(0)
+    dropCatcher:Hide()
+    dropCatcher:SetScript("OnMouseDown", function()
+        CloseDropDownMenus()
+    end)
+
+    hooksecurefunc("ToggleDropDownMenu", function()
+        if UIDROPDOWNMENU_OPEN then
+            dropCatcher:Show()
+        else
+            dropCatcher:Hide()
+        end
+    end)
+    hooksecurefunc("CloseDropDownMenus", function()
+        dropCatcher:Hide()
+    end)
 end
 
 eventFrame:RegisterEvent("ADDON_LOADED")

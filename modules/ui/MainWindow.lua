@@ -211,11 +211,63 @@ local function CreateLeftColumn(frame)
     return col
 end
 
-local function CreateRightPanel(frame)
+local function CreateRightPanel(frame, left)
     local panel = CreateFrame("Frame", nil, frame)
-    panel:SetPoint("TOPLEFT",     frame, "TOPLEFT",     14 + LEFT_WIDTH + 6, -34)
+    panel:SetPoint("TOPLEFT",     left, "TOPRIGHT",    6, 0)
     panel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -14, 14)
     return panel
+end
+
+local function CreateCollapseToggle(frame, left, right)
+    local function GetUI() return (EbonBuildsDB and EbonBuildsDB.globalSettings and EbonBuildsDB.globalSettings.uiState) or {} end
+    local collapsed = not GetUI().leftPanelOpen
+
+    local btn = CreateFrame("Button", nil, frame)
+    btn:SetSize(16, 30)
+    btn:SetPoint("TOPLEFT", frame, "TOPLEFT", 14, -8)
+    btn:SetFrameLevel(frame:GetFrameLevel() + 2)
+
+    local arrow = btn:CreateFontString(nil, "OVERLAY")
+    arrow:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+    arrow:SetPoint("CENTER", btn, "CENTER", 0, 0)
+
+    local function Layout()
+        if collapsed then
+            left:Hide()
+            arrow:SetText(">")
+            right:ClearAllPoints()
+            right:SetPoint("TOPLEFT",     frame, "TOPLEFT",     30, -34)
+            right:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -14, 14)
+            frame:SetWidth(WINDOW_WIDTH - LEFT_WIDTH - 6)
+        else
+            left:Show()
+            arrow:SetText("<")
+            right:ClearAllPoints()
+            right:SetPoint("TOPLEFT",     left, "TOPRIGHT",    6, 0)
+            right:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -14, 14)
+            frame:SetWidth(WINDOW_WIDTH)
+        end
+        if EbonBuildsDB and EbonBuildsDB.globalSettings then
+            EbonBuildsDB.globalSettings.uiState = EbonBuildsDB.globalSettings.uiState or {}
+            EbonBuildsDB.globalSettings.uiState.leftPanelOpen = not collapsed
+        end
+    end
+
+    Layout()
+
+    btn:SetScript("OnClick", function()
+        collapsed = not collapsed
+        Layout()
+    end)
+
+    btn:SetScript("OnEnter", function(self)
+        arrow:SetTextColor(1, 0.82, 0, 1)
+    end)
+    btn:SetScript("OnLeave", function(self)
+        arrow:SetTextColor(1, 1, 1, 1)
+    end)
+
+    return btn
 end
 
 local function BuildFrame()
@@ -236,6 +288,20 @@ local function BuildFrame()
     CreateAutomationButton(frame, closeBtn)
     frame._settingsPopup = settingsPopup
 
+    frame:SetScript("OnHide", function()
+        if EbonBuildsDB and EbonBuildsDB.globalSettings then
+            EbonBuildsDB.globalSettings.uiState = EbonBuildsDB.globalSettings.uiState or {}
+            EbonBuildsDB.globalSettings.uiState.windowOpen = false
+        end
+    end)
+
+    frame:SetScript("OnShow", function()
+        if EbonBuildsDB and EbonBuildsDB.globalSettings then
+            EbonBuildsDB.globalSettings.uiState = EbonBuildsDB.globalSettings.uiState or {}
+            EbonBuildsDB.globalSettings.uiState.windowOpen = true
+        end
+    end)
+
     frame:Hide()
     return frame
 end
@@ -243,11 +309,13 @@ end
 function EbonBuilds.MainWindow.Init()
     local frame = BuildFrame()
     local left  = CreateLeftColumn(frame)
-    local right = CreateRightPanel(frame)
+    local right = CreateRightPanel(frame, left)
 
     EbonBuilds.MainWindow._frame = frame
     EbonBuilds.MainWindow._left  = left
     EbonBuilds.MainWindow._right = right
+
+    CreateCollapseToggle(frame, left, right)
 
     EbonBuilds.ViewRouter.SetContainer(right)
     EbonBuilds.BuildList.Init(left)
@@ -276,6 +344,11 @@ function EbonBuilds.MainWindow.Init()
     })
 
     EbonBuilds.MainWindow._ShowInitialView()
+
+    local ui = EbonBuildsDB and EbonBuildsDB.globalSettings and EbonBuildsDB.globalSettings.uiState
+    if ui and ui.windowOpen then
+        frame:Show()
+    end
 end
 
 function EbonBuilds.MainWindow._ShowInitialView()
@@ -293,8 +366,16 @@ function EbonBuilds.MainWindow.Toggle()
     if not frame then return end
     if frame:IsShown() then
         frame:Hide()
+        if EbonBuildsDB and EbonBuildsDB.globalSettings then
+            EbonBuildsDB.globalSettings.uiState = EbonBuildsDB.globalSettings.uiState or {}
+            EbonBuildsDB.globalSettings.uiState.windowOpen = false
+        end
     else
         EbonBuilds.MainWindow._ShowInitialView()
         frame:Show()
+        if EbonBuildsDB and EbonBuildsDB.globalSettings then
+            EbonBuildsDB.globalSettings.uiState = EbonBuildsDB.globalSettings.uiState or {}
+            EbonBuildsDB.globalSettings.uiState.windowOpen = true
+        end
     end
 end

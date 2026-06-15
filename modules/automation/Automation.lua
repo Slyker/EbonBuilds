@@ -142,12 +142,6 @@ local function ScoreLockedEcho(lockedId, settings)
     return EbonBuilds.Scoring.Score(entry, w, settings)
 end
 
-local function UpdateStat(build, key)
-    if build and build.stats then
-        build.stats[key] = (build.stats[key] or 0) + 1
-    end
-end
-
 local function LogAndToast(scored, action, targetIndex)
     EbonBuilds.Toast.ShowAutomationResult(scored, action, targetIndex)
     EbonBuilds.Session.LogAction(scored, action, targetIndex)
@@ -182,7 +176,6 @@ local function TrySelect(scored, settings, build)
     end
 
     ProjectEbonhold.PerkService.SelectPerk(pick.spellId)
-    UpdateStat(build, "picks")
     return true, pick
 end
 
@@ -240,7 +233,6 @@ function EbonBuilds.Automation.Evaluate()
         for _, lockedId in ipairs(lockedList) do
             if lockedId and lockedId == s.spellId then
                 ProjectEbonhold.PerkService.SelectPerk(s.spellId)
-                UpdateStat(build, "picks")
                 LogAndToast(scored, "Select (Locked)", s.index)
                 return true
             end
@@ -259,7 +251,6 @@ function EbonBuilds.Automation.Evaluate()
                 if not s.isProtected then
                     local ok = ProjectEbonhold.PerkService.BanishPerk(s.index - 1)
                     if ok then
-                        UpdateStat(build, "banishesUsed")
                         table.sort(scored, function(a, b) return a.index < b.index end)
                         LogAndToast(scored, "Banish", s.index)
                         return true
@@ -275,7 +266,6 @@ function EbonBuilds.Automation.Evaluate()
                 if not s.isProtected then
                     local ok = ProjectEbonhold.PerkService.BanishPerk(s.index - 1)
                     if ok then
-                        UpdateStat(build, "banishesUsed")
                         table.sort(scored, function(a, b) return a.index < b.index end)
                         LogAndToast(scored, "Banish", s.index)
                         return true
@@ -311,7 +301,6 @@ function EbonBuilds.Automation.Evaluate()
             if sum < peakScore * settings.autoRerollPct / 100 then
                 local ok = ProjectEbonhold.PerkService.RequestReroll()
                 if ok then
-                    UpdateStat(build, "rerollsUsed")
                     LogAndToast(scored, "Reroll", 0)
                     return true
                 end
@@ -373,7 +362,6 @@ function EbonBuilds.Automation.Evaluate()
             local lowest = aboveChoices[#aboveChoices]
             local ok = ProjectEbonhold.PerkService.FreezePerk(lowest.index - 1)
             if ok then
-                UpdateStat(build, "freezesUsed")
                 locallyFrozenIndices[lowest.index] = true
 
                 -- Optimistically update runData so the toast and session log

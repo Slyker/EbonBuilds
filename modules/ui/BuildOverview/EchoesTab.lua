@@ -7,7 +7,17 @@ local UIH = EbonBuilds.UIHelpers
 local QUALITY_COLORS = EbonBuilds.Constants.QUALITY_COLORS
 local EchoesData = BO.EchoesData
 
-local ECHO_QUALITY_LABELS = { "All", "Common", "Uncommon", "Rare", "Epic", "Legendary" }
+local function SaveUIState()
+    if not EbonBuildsDB or not EbonBuildsDB.globalSettings then return end
+    local ui = EbonBuildsDB.globalSettings.uiState
+    if not ui then return end
+    ui.echoesSearch    = BO.echoesSearchText
+    ui.echoesQuality   = BO.echoesQualityFilter
+    ui.echoesSortMode  = BO.echoesSortMode
+    ui.echoesShowMode  = BO.echoesShowMode
+end
+
+local ECHO_QUALITY_LABELS = { "Common", "Uncommon", "Rare", "Epic", "Legendary" }
 local ECHO_SORT_LABELS = { "Quality", "Name", "Stacks", "Timestamp", "Score" }
 
 local ECHO_ICON_SIZE   = 52
@@ -26,58 +36,118 @@ local function BuildEchoesTab(parent)
     local header = CreateFrame("Frame", nil, parent)
     header:SetPoint("TOPLEFT", parent, "TOPLEFT", 10, -8)
     header:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -10, -8)
-    header:SetHeight(28)
+    header:SetHeight(68)
 
-    local edit, searchFrame = UIH.CreateSearchBox(header, 160, 22, function(text)
+    local edit, searchFrame = UIH.CreateSearchBox(header, nil, 22, function(text)
         BO.echoesSearchText = text
+        SaveUIState()
         BO.RefreshEchoes()
-    end)
-    searchFrame:SetPoint("LEFT", header, "LEFT", 0, 0)
+    end, "Search...")
+    searchFrame:SetPoint("TOPLEFT", header, "TOPLEFT", 0, 0)
+    searchFrame:SetPoint("TOPRIGHT", header, "TOPRIGHT", 0, 0)
     BO.echoesSearchBox = edit
+    if BO.echoesSearchText and BO.echoesSearchText ~= "" then
+        edit:SetText(BO.echoesSearchText)
+    end
 
-    local qualityDD = CreateFrame("Frame", "EbonBuildsEchoQualityDD", header, "UIDropDownMenuTemplate")
-    qualityDD:SetPoint("LEFT", searchFrame, "RIGHT", -4, -2)
-    UIDropDownMenu_Initialize(qualityDD, function()
+    local filterBar = CreateFrame("Frame", nil, header)
+    filterBar:SetPoint("TOPLEFT", searchFrame, "BOTTOMLEFT", 0, -2)
+    filterBar:SetPoint("TOPRIGHT", header, "TOPRIGHT", 0, 0)
+    filterBar:SetHeight(32)
+
+    local qualityDD = CreateFrame("Frame", "EbonBuildsEchoQualityDD", filterBar, "UIDropDownMenuTemplate")
+    qualityDD:SetPoint("LEFT", filterBar, "LEFT", 0, 0)
+    UIDropDownMenu_SetWidth(qualityDD, 100)
+
+    local function UpdateQualityLabel()
+        if not BO.echoesQualityFilter then
+            UIDropDownMenu_SetText(qualityDD, "All qualities")
+        else
+            local count = 0
+            for _ in pairs(BO.echoesQualityFilter) do count = count + 1 end
+            if count == 0 then
+                UIDropDownMenu_SetText(qualityDD, "All qualities")
+            else
+                UIDropDownMenu_SetText(qualityDD, "Quality (" .. count .. ")")
+            end
+        end
+    end
+
+    UIDropDownMenu_Initialize(qualityDD, function(self, level)
         for i, name in ipairs(ECHO_QUALITY_LABELS) do
+            local qualityValue = i - 1
             local info = UIDropDownMenu_CreateInfo()
             info.text = name
-            info.func = function()
-                BO.echoesQualityFilter = i - 2
-                UIDropDownMenu_SetText(qualityDD, name)
+            info.isNotRadio = true
+            info.keepShownOnClick = true
+            info.checked = BO.echoesQualityFilter and BO.echoesQualityFilter[qualityValue] and true or false
+            info.func = function(_, _, _, checked)
+                if checked then
+                    if not BO.echoesQualityFilter then BO.echoesQualityFilter = {} end
+                    BO.echoesQualityFilter[qualityValue] = true
+                else
+                    if BO.echoesQualityFilter then
+                        BO.echoesQualityFilter[qualityValue] = nil
+                    end
+                end
+                UpdateQualityLabel()
+                SaveUIState()
                 BO.RefreshEchoes()
             end
-            UIDropDownMenu_AddButton(info)
+            UIDropDownMenu_AddButton(info, level)
         end
     end)
-    UIDropDownMenu_SetWidth(qualityDD, 80)
-    UIDropDownMenu_SetText(qualityDD, "All")
 
-    local sortDD = CreateFrame("Frame", "EbonBuildsEchoSortDD", header, "UIDropDownMenuTemplate")
+    UpdateQualityLabel()
+
+    local sortDD = CreateFrame("Frame", "EbonBuildsEchoSortDD", filterBar, "UIDropDownMenuTemplate")
     sortDD:SetPoint("LEFT", qualityDD, "RIGHT", -8, 0)
     UIDropDownMenu_Initialize(sortDD, function()
         for i, name in ipairs(ECHO_SORT_LABELS) do
             local info = UIDropDownMenu_CreateInfo()
             info.text = name
+            info.checked = (BO.echoesSortMode == i)
             info.func = function()
                 BO.echoesSortMode = i
                 UIDropDownMenu_SetText(sortDD, name)
+                UIDropDownMenu_Initialize(sortDD, sortDD.initialize)
+                SaveUIState()
                 BO.RefreshEchoes()
             end
             UIDropDownMenu_AddButton(info)
         end
     end)
     UIDropDownMenu_SetWidth(sortDD, 80)
-    UIDropDownMenu_SetText(sortDD, "Quality")
+    UIDropDownMenu_SetText(sortDD, ECHO_SORT_LABELS[BO.echoesSortMode] or "Quality")
 
-    local showAllCB = UIH.CreateCheckButton(header, "All", function(self, checked)
-        BO.echoesShowAll = checked
-        BO.RefreshEchoes()
+    local showModeDD = CreateFrame("Frame", "EbonBuildsEchoShowModeDD", filterBar, "UIDropDownMenuTemplate")
+    showModeDD:SetPoint("LEFT", sortDD, "RIGHT", -4, 0)
+    UIDropDownMenu_SetWidth(showModeDD, 90)
+    UIDropDownMenu_Initialize(showModeDD, function()
+        local modes = {
+            { key = "owned", label = "Owned" },
+            { key = "class", label = "Class" },
+            { key = "all",   label = "All" },
+        }
+        for _, mode in ipairs(modes) do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = mode.label
+            info.checked = (BO.echoesShowMode == mode.key)
+            info.func = function()
+                BO.echoesShowMode = mode.key
+                UIDropDownMenu_SetText(showModeDD, mode.label)
+                UIDropDownMenu_Initialize(showModeDD, showModeDD.initialize)
+                SaveUIState()
+                BO.RefreshEchoes()
+            end
+            UIDropDownMenu_AddButton(info)
+        end
     end)
-    showAllCB:SetPoint("LEFT", sortDD, "RIGHT", 8, 0)
-    showAllCB:SetChecked(BO.echoesShowAll)
+    local modeLabels = { owned = "Owned", class = "Class", all = "All" }
+    UIDropDownMenu_SetText(showModeDD, modeLabels[BO.echoesShowMode] or "Owned")
 
     local scroll, child, bar = UIH.CreateScroller(parent)
-    scroll:SetPoint("TOPLEFT",     header, "BOTTOMLEFT", 0, -6)
+    scroll:SetPoint("TOPLEFT",     header, "BOTTOMLEFT", 0, -4)
     scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -18, 8)
     child:SetWidth(460)
     UIH.WireScroller(scroll, bar, 16, child)
@@ -97,12 +167,36 @@ local function RefreshEchoes()
     if not echoesChild then return end
     for _, btn in ipairs(echoesRows) do btn:Hide() end
 
-    local owned = BO.echoesShowAll and EchoesData.ComputeAllEchoes() or EchoesData.ComputeOwnedEchoes()
+    local mode = BO.echoesShowMode or "owned"
+    local owned
+    if mode == "all" then
+        owned = EchoesData.ComputeAllEchoes()
+    elseif mode == "class" then
+        local all = EchoesData.ComputeAllEchoes()
+        local build = EbonBuilds.Build and EbonBuilds.Build.GetActive()
+        local classToken = build and build.class or EbonBuilds.Build and EbonBuilds.Build.PlayerClassToken and EbonBuilds.Build.PlayerClassToken()
+        local bitVal = classToken and EbonBuilds.Constants.CLASS_BITS[classToken]
+        owned = {}
+        for _, entry in ipairs(all) do
+            if not bitVal or not entry.classMask or entry.classMask == 0 or bit.band(entry.classMask, bitVal) ~= 0 then
+                owned[#owned + 1] = entry
+            end
+        end
+    else
+        owned = EchoesData.ComputeOwnedEchoes()
+    end
 
     local filtered = {}
     for _, entry in ipairs(owned) do
         local matchSearch = BO.echoesSearchText == "" or entry.name:lower():find(BO.echoesSearchText, 1, true)
-        local matchQuality = BO.echoesQualityFilter == -1 or entry.quality == BO.echoesQualityFilter
+        local matchQuality = true
+        if BO.echoesQualityFilter then
+            local count = 0
+            for _ in pairs(BO.echoesQualityFilter) do count = count + 1 end
+            if count > 0 then
+                matchQuality = BO.echoesQualityFilter[entry.quality] and true or false
+            end
+        end
         if matchSearch and matchQuality then
             filtered[#filtered + 1] = entry
         end
@@ -294,7 +388,7 @@ local function RefreshEchoes()
             btn._lockIcon:Hide()
         end
 
-        if BO.echoesShowAll and not entry.owned then
+        if mode ~= "owned" and not entry.owned then
             btn:SetAlpha(0.5)
         else
             btn:SetAlpha(1)
