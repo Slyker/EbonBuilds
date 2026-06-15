@@ -174,7 +174,7 @@ local function RefreshEchoes()
             btn._bannedOverlay = bannedOverlay
 
             local bannedText = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            bannedText:SetPoint("BOTTOM", icon, "BOTTOM", 0, 2)
+            bannedText:SetPoint("CENTER", icon, "CENTER", 0, 0)
             bannedText:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
             bannedText:SetText("BANNED")
             bannedText:SetTextColor(1, 0.3, 0.3, 1)
