@@ -152,9 +152,10 @@ local function ComputeAllEchoes()
             local existing = bySpellId[spellId]
             if not existing or quality > existing.quality then
                 local stack = ownedStacks[spellId] or 0
+                local name = GetSpellInfo(spellId) or data.comment
                 bySpellId[spellId] = {
                     spellId   = spellId,
-                    name      = data.comment,
+                    name      = name,
                     quality   = quality,
                     stack     = stack,
                     maxStack  = data.maxStack or 1,
