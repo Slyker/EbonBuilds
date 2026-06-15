@@ -259,12 +259,17 @@ local function RefreshEchoes()
         btn._nameText:SetText(entry.name)
         btn._nameText:SetTextColor(qc[1], qc[2], qc[3])
 
-        local banned = EbonBuilds.Scoring and EbonBuilds.Scoring.IsBanned and EbonBuilds.Scoring.IsBanned(entry.spellId)
+        local banned = EbonBuilds.Scoring and EbonBuilds.Scoring.IsBannedByName and EbonBuilds.Scoring.IsBannedByName(entry.name)
         local settings = EbonBuilds.Scoring.GetEffectiveSettings()
         local weight = EbonBuilds.Weights.Get(entry.name)
         local score = EbonBuilds.Scoring.Score(entry, weight, settings)
         if banned then score = math.floor(score * 0.1) end
         btn._scoreText:SetText(tostring(math.floor(score)))
+        if banned then
+            btn._scoreText:SetTextColor(1, 0.3, 0.3, 1)
+        else
+            btn._scoreText:SetTextColor(1, 0.82, 0, 1)
+        end
 
         if banned then
             btn._icon:SetDesaturated(true)

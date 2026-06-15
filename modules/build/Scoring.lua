@@ -120,6 +120,20 @@ function EbonBuilds.Scoring.IsBanned(spellId)
     return banList and banList[spellId] and true or false
 end
 
+function EbonBuilds.Scoring.IsBannedByName(echoName)
+    if not echoName then return false end
+    local settings = EbonBuilds.Scoring.GetEffectiveSettings()
+    local banList = settings and settings.echoBanList
+    if not banList then return false end
+    local best = EbonBuilds.EchoTableRows and EbonBuilds.EchoTableRows.BuildBestByName and EbonBuilds.EchoTableRows.BuildBestByName()
+    if best and best[echoName] and best[echoName].spellIds then
+        for _, sid in pairs(best[echoName].spellIds) do
+            if banList[sid] then return true end
+        end
+    end
+    return false
+end
+
 function EbonBuilds.Scoring.GetEffectiveSettings()
     if EbonBuilds.ViewRouter and EbonBuilds.ViewRouter.Current() == "buildOverview" then
         if EbonBuilds.BuildForm and EbonBuilds.BuildForm.GetEditingSettings then
