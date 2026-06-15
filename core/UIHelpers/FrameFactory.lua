@@ -100,7 +100,7 @@ end
 -- Quality border (for locked echo slots) ---------------------------------
 
 function EbonBuilds.UIHelpers.CreateQualityBorder(btn, inset)
-    inset = inset or 2
+    inset = inset or 1
     local border = btn:CreateTexture(nil, "BORDER")
     border:SetPoint("TOPLEFT",     btn, "TOPLEFT",     -inset,  inset)
     border:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT",  inset, -inset)
