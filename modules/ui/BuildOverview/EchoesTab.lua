@@ -167,7 +167,7 @@ local function RefreshEchoes()
 
             local bannedOverlay = btn:CreateTexture(nil, "OVERLAY")
             bannedOverlay:SetTexture("Interface\\Buttons\\WHITE8x8")
-            bannedOverlay:SetVertexColor(0.8, 0.1, 0.1, 0.45)
+            bannedOverlay:SetVertexColor(0.8, 0.1, 0.1, 0.25)
             bannedOverlay:SetSize(ECHO_ICON_SIZE, ECHO_ICON_SIZE)
             bannedOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0)
             bannedOverlay:Hide()
@@ -180,6 +180,12 @@ local function RefreshEchoes()
             bannedText:SetTextColor(1, 0.3, 0.3, 1)
             bannedText:Hide()
             btn._bannedText = bannedText
+
+            local scoreText = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            scoreText:SetPoint("TOPRIGHT", icon, "TOPRIGHT", -2, -2)
+            scoreText:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
+            scoreText:SetTextColor(1, 0.82, 0, 1)
+            btn._scoreText = scoreText
 
             local lockIcon = btn:CreateTexture(nil, "OVERLAY")
             lockIcon:SetTexture("Interface\\Buttons\\UI-ActionButton-Borders")
@@ -254,6 +260,12 @@ local function RefreshEchoes()
         btn._nameText:SetTextColor(qc[1], qc[2], qc[3])
 
         local banned = EbonBuilds.Scoring and EbonBuilds.Scoring.IsBanned and EbonBuilds.Scoring.IsBanned(entry.spellId)
+        local settings = EbonBuilds.Scoring.GetEffectiveSettings()
+        local weight = EbonBuilds.Weights.Get(entry.name)
+        local score = EbonBuilds.Scoring.Score(entry, weight, settings)
+        if banned then score = math.floor(score * 0.1) end
+        btn._scoreText:SetText(tostring(math.floor(score)))
+
         if banned then
             btn._icon:SetDesaturated(true)
             btn._icon:SetAlpha(0.5)
