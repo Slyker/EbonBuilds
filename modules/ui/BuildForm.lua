@@ -37,6 +37,13 @@ function EbonBuilds.BuildForm.GetEditingClass()
     return state.class
 end
 function EbonBuilds.BuildForm.GetEditingSettings()
+    if state.id then
+        local build = EbonBuilds.Build.Get(state.id)
+        if build then
+            build.settings = build.settings or EbonBuilds.Build.DefaultSettings()
+            return build.settings
+        end
+    end
     if not state.settings then
         state.settings = EbonBuilds.Build.DefaultSettings()
     end
@@ -492,7 +499,7 @@ LoadFromBuild = function(build)
     state.class    = build.class
     state.spec     = build.spec     or 1
     state.comments = build.comments or ""
-    state.settings = CloneSettings(build.settings)
+    state.settings = build.settings
     state.isPublic = build.isPublic or false
     for i = 1, 5 do state.locked[i] = build.lockedEchoes and build.lockedEchoes[i] or nil end
 end
