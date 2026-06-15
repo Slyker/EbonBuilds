@@ -91,6 +91,10 @@ local function ScoreChoice(choice, settings)
     else
         score = EbonBuilds.Scoring.ScorePerQuality(entry, weight, settings, entry.quality)
     end
+    -- Ban penalty: banned echoes always score worst
+    if EbonBuilds.Scoring.IsBannedByName(name) then
+        score = -math.huge
+    end
     -- Freeze penalty: frozen and carried echoes get a score reduction so they
     -- are deprioritized in subsequent evaluations until eventually picked.
     if (choice.isFrozen or choice.isCarried) and settings.freezePenaltyPct and settings.freezePenaltyPct > 0 then
