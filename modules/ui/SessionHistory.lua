@@ -761,7 +761,7 @@ function EbonBuilds.SessionHistory.RefreshLogView()
             if ch then
                 local hex = QUALITY_HEX[ch.quality] or "ffffff"
                 nameFont:SetText(("|cff%s%s|r"):format(hex, ch.name))
-                scoreFont:SetText(("|cff%s(%.0f)|r"):format(hex, ch.score))
+                scoreFont:SetText(ch.score and ("|cff%s(%.0f)|r"):format(hex, ch.score) or "")
 
                 echoFrame._echoName  = ch.name
                 echoFrame._echoScore = ch.score
