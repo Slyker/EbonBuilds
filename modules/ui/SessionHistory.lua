@@ -894,7 +894,7 @@ function EbonBuilds.SessionHistory.ExportSession()
             parts[#parts + 1] = string.format("%-16s", entry.action)
 
             for j, ch in ipairs(entry.choices) do
-                local text = string.format("%s (%.0f)", ch.name, ch.score)
+                local text = ch.score and string.format("%s (%.0f)", ch.name, ch.score) or ch.name
                 if j == entry.targetIndex then
                     text = ">>" .. text .. "<<"
                 end
