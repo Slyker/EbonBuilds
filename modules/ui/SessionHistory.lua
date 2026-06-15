@@ -256,7 +256,7 @@ local function CloseMenu()
 end
 
 local function ToggleBan(echoName)
-    local build = EbonBuilds.Build.GetActive()
+    local build = EbonBuilds.Build.GetCurrent()
     if not build then return end
     EbonBuilds.Build.EnsureSettings(build)
     local settings = build.settings
@@ -269,6 +269,10 @@ local function ToggleBan(echoName)
         settings.echoBanList[spellData.spellId] = nil
     else
         settings.echoBanList[spellData.spellId] = true
+    end
+
+    if EbonBuilds.BuildOverview and EbonBuilds.BuildOverview.RefreshEchoes then
+        EbonBuilds.BuildOverview.RefreshEchoes()
     end
 end
 

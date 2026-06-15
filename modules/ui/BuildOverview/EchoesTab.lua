@@ -167,15 +167,15 @@ local function RefreshEchoes()
 
             local bannedOverlay = btn:CreateTexture(nil, "OVERLAY")
             bannedOverlay:SetTexture("Interface\\Buttons\\WHITE8x8")
-            bannedOverlay:SetVertexColor(0.8, 0.1, 0.1, 0.25)
-            bannedOverlay:SetSize(ECHO_ICON_SIZE, ECHO_ICON_SIZE)
+            bannedOverlay:SetVertexColor(0.8, 0.1, 0.1, 0.5)
+            bannedOverlay:SetSize(ECHO_ICON_SIZE + 4, ECHO_ICON_SIZE + 4)
             bannedOverlay:SetPoint("CENTER", icon, "CENTER", 0, 0)
             bannedOverlay:Hide()
             btn._bannedOverlay = bannedOverlay
 
             local bannedText = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            bannedText:SetPoint("CENTER", icon, "CENTER", 0, 0)
-            bannedText:SetFont("Fonts\\FRIZQT__.TTF", 11, "OUTLINE")
+            bannedText:SetPoint("BOTTOM", icon, "BOTTOM", 0, 2)
+            bannedText:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
             bannedText:SetText("BANNED")
             bannedText:SetTextColor(1, 0.3, 0.3, 1)
             bannedText:Hide()
@@ -268,8 +268,8 @@ local function RefreshEchoes()
 
         if banned then
             btn._icon:SetDesaturated(true)
-            btn._icon:SetAlpha(0.5)
-            btn._border:SetVertexColor(0.6, 0.1, 0.1, 1)
+            btn._icon:SetAlpha(0.6)
+            btn._border:SetVertexColor(0.9, 0.1, 0.1, 1)
             btn._bannedOverlay:Show()
             btn._bannedText:Show()
         else
