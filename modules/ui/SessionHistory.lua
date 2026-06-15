@@ -183,7 +183,12 @@ local function ShowEchoTooltip(owner, echoName, showIcon)
         AddLine("Families: " .. table.concat(spellData.families, ", "), 0.6, 0.8, 1.0)
     end
 
-    if spellData then
+    local banned = EbonBuilds.Scoring and EbonBuilds.Scoring.IsBannedByName and EbonBuilds.Scoring.IsBannedByName(echoName)
+
+    if banned then
+        AddLine(" ")
+        AddLine("BANNED", 1, 0.27, 0.27)
+    elseif spellData then
         local settings = EbonBuilds.Scoring.GetEffectiveSettings()
         local weight = EbonBuilds.Weights.Get(echoName)
         local parts, total = EbonBuilds.Scoring.ScoreBreakdown(spellData, weight, settings)
@@ -198,13 +203,6 @@ local function ShowEchoTooltip(owner, echoName, showIcon)
         local freezeThresh = math.floor(peak * (settings.autoFreezePct or 80) / 100)
         AddLine(" ")
         AddLine("|cffff6666Banish < " .. banThresh .. "|r  |cff66ccffFreeze > " .. freezeThresh .. "|r", 0.6, 0.6, 0.6)
-    end
-
-    local settings2 = EbonBuilds.Scoring.GetEffectiveSettings()
-    local banList = settings2 and settings2.echoBanList or {}
-    if spellId and banList[spellId] then
-        AddLine(" ")
-        AddLine("BANNED", 1, 0.27, 0.27)
     end
 
     AddLine(" ")
