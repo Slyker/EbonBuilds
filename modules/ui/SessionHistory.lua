@@ -508,8 +508,7 @@ end
 function EbonBuilds.SessionHistory.RefreshSessionList()
     ClearSessionItems()
 
-    local buildId = EbonBuilds.Build.GetCurrentId()
-    local sessions = EbonBuilds.Session.GetSessionsForBuild(buildId)
+    local sessions = EbonBuilds.Session.GetSessions()
     local activeSession = EbonBuilds.Session.GetActiveSession()
 
     local sorted = {}
@@ -689,8 +688,7 @@ function EbonBuilds.SessionHistory.RefreshLogView()
         return
     end
 
-    local buildId = EbonBuilds.Build.GetCurrentId()
-    local sessions = EbonBuilds.Session.GetSessionsForBuild(buildId)
+    local sessions = EbonBuilds.Session.GetSessions()
     local session
     for _, s in ipairs(sessions) do
         if s.id == selectedSessionId then session = s; break end
@@ -872,8 +870,7 @@ function EbonBuilds.SessionHistory.ExportSession()
 
     local session
     if selectedSessionId then
-        local buildId = EbonBuilds.Build.GetCurrentId()
-        for _, s in ipairs(EbonBuilds.Session.GetSessionsForBuild(buildId)) do
+        for _, s in ipairs(EbonBuilds.Session.GetSessions()) do
             if s.id == selectedSessionId then session = s; break end
         end
     end
