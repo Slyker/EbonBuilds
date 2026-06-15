@@ -151,6 +151,9 @@ end
 local function LogAndToast(scored, action, targetIndex)
     EbonBuilds.Toast.ShowAutomationResult(scored, action, targetIndex)
     EbonBuilds.Session.LogAction(scored, action, targetIndex)
+    if EbonBuilds.BuildOverview and EbonBuilds.BuildOverview.RefreshEchoes then
+        EbonBuilds.BuildOverview.RefreshEchoes()
+    end
 end
 
 ------------------------------------------------------------------------

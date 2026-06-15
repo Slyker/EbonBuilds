@@ -277,6 +277,9 @@ end
 local function AdjustWeight(echoName, delta)
     local current = EbonBuilds.Weights.Get(echoName)
     EbonBuilds.Weights.Set(echoName, current + delta)
+    if EbonBuilds.BuildOverview and EbonBuilds.BuildOverview.RefreshEchoes then
+        EbonBuilds.BuildOverview.RefreshEchoes()
+    end
 end
 
 local function BuildContextMenu()
