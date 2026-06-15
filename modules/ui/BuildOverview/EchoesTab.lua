@@ -8,7 +8,7 @@ local QUALITY_COLORS = EbonBuilds.Constants.QUALITY_COLORS
 local EchoesData = BO.EchoesData
 
 local ECHO_QUALITY_LABELS = { "All", "Common", "Uncommon", "Rare", "Epic", "Legendary" }
-local ECHO_SORT_LABELS = { "Quality", "Name", "Stacks", "Timestamp" }
+local ECHO_SORT_LABELS = { "Quality", "Name", "Stacks", "Timestamp", "Score" }
 
 local ECHO_ICON_SIZE   = 52
 local ECHO_ICON_PAD    = 20
@@ -125,6 +125,15 @@ local function RefreshEchoes()
             local ta = timestamps[a.name] or 0
             local tb = timestamps[b.name] or 0
             if ta ~= tb then return ta > tb end
+            if a.quality ~= b.quality then return a.quality > b.quality end
+            return a.name < b.name
+        end)
+    elseif BO.echoesSortMode == 5 then
+        local settings = EbonBuilds.Scoring.GetEffectiveSettings()
+        table.sort(filtered, function(a, b)
+            local sa = EbonBuilds.Scoring.Score(a, EbonBuilds.Weights.Get(a.name), settings)
+            local sb = EbonBuilds.Scoring.Score(b, EbonBuilds.Weights.Get(b.name), settings)
+            if sa ~= sb then return sa > sb end
             if a.quality ~= b.quality then return a.quality > b.quality end
             return a.name < b.name
         end)
